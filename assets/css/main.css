@@ -1,0 +1,160 @@
+:root {
+  --black: #101828;
+  --border: #f3f4f6;
+  --border-darker: #d1d5db;
+  --light-grey: #6a7282;
+  --text-grey: #4a5565;
+  --blue: #2b7fff;
+  --green: #00c16a;
+  --light-blue: #2b7fff1a;
+  --light-green: #e6fff4;
+  --ant-border: #f3f4f6;
+  --essay-txt: #364153;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+body {
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-family: "Inter";
+  color: var(--black);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  outline: none;
+}
+button {
+  cursor: pointer;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+}
+
+#root,
+#__next {
+  isolation: isolate;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+.section__title {
+  font-weight: 500;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 8px;
+  text-align: left;
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+th {
+  padding: 16px 20px;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-grey);
+  border-collapse: separate;
+}
+tr:last-child td {
+  border-bottom: none;
+}
+tr td:last-child {
+  text-align: right;
+}
+.status {
+  background: var(--light-blue);
+  color: var(--blue);
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+}
+.add__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-color: var(--blue);
+  color: var(--blue);
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
