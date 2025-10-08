@@ -69,7 +69,16 @@ const gender = [
           <p class="profile__apply">Apply year: 2023/2024</p>
         </div>
       </div>
-      <NuxtLink to="/"> Preview </NuxtLink>
+      <div class="modal__price">
+        <div class="modal__price-hourly">
+          <p>$50</p>
+          <span>Hourly Rate</span>
+        </div>
+        <div class="modal__price-essay">
+          <p>$24</p>
+          <span>Essay Rate</span>
+        </div>
+      </div>
     </div>
     <div class="profile__grid">
       <div class="profile__details">
@@ -342,5 +351,37 @@ const gender = [
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
+}
+.modal__price {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.modal__price-hourly,
+.modal__price-essay {
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal__price-hourly p,
+.modal__price-essay p {
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+}
+.modal__price-hourly span,
+.modal__price-essay span {
+  font-size: 14px;
+  line-height: 20px;
+}
+.modal__price-hourly {
+  background: var(--light-blue);
+  color: var(--blue);
+}
+.modal__price-essay {
+  background: var(--light-green);
+  color: var(--green);
 }
 </style>

@@ -1,7 +1,7 @@
 <script setup>
 const infoShow = ref(true);
 const tasksShow = ref(false);
-const visible = ref(true);
+const visible = ref(false);
 const showModal = () => {
   visible.value = true;
 };
