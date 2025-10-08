@@ -159,6 +159,14 @@ tr td:last-child {
   transition: all 0.3s ease;
 }
 .status {
-  background: var(--light-green);
-  color: var(--green);
+  background: var(--light-green) !important;
+  color: var(--green) !important;
+}
+.status.red {
+  background: #ffe6e6 !important;
+  color: #ff3b3b !important;
+}
+.status.yellow {
+  background: #fff7e6 !important;
+  color: #ff9f00 !important;
 }
