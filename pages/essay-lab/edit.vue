@@ -1,8 +1,16 @@
 <template>
   <div class="essay__edit-page">
-    <PageBanner />
+    <PageBanner
+      titleProps="Essays"
+      backgroundProps="#0092B8"
+      iconProps="/page-icons/booking.png"
+    />
     <div class="essay__grid">
       <div class="essay__left">
+        <NuxtLink to="/essay-lab" class="btn btn--secondary back__btn">
+          <Icon name="lucide:arrow-left" class="icon" />
+          Back
+        </NuxtLink>
         <h4 class="essay__title">
           School students should be allowed to curate their high school
           curriculum.
@@ -86,7 +94,7 @@
       <div class="essay__right">
         <div>
           <div class="right__head">
-            <h4 class="section__title">Teacher</h4>
+            <h4 class="section__title">Student</h4>
             <button class="edit">
               <Icon name="lucide:ellipsis-vertical" class="icon" />
             </button>
@@ -98,30 +106,20 @@
               </div>
               <div>
                 <p class="essay__name">Yu Jimin</p>
-                <p class="essay__status green">Sent</p>
+                <p class="essay__status green">
+                  Tashkent State University of Oriental Studies
+                </p>
               </div>
             </div>
           </div>
         </div>
         <div>
-          <div class="right__head">
-            <h4 class="section__title">Feedbacks</h4>
-            <p class="right__count">Total: 46</p>
-          </div>
-          <div class="feedback__items">
-            <div class="feedback__item">
-              <p>#1 <Icon name="lucide:dot" class="icon" /> 14:50</p>
-              <a href="#"> https://google.docs/13123Hgwe!#@VPwoe </a>
-            </div>
-            <div class="feedback__item">
-              <p>#2 <Icon name="lucide:dot" class="icon" /> 14:50</p>
-              <a href="#"> https://google.docs/13123Hgwe!#@VPwoe </a>
-            </div>
-            <div class="feedback__item">
-              <p>#3 <Icon name="lucide:dot" class="icon" /> 14:50</p>
-              <a href="#"> https://google.docs/13123Hgwe!#@VPwoe </a>
-            </div>
-          </div>
+          <form>
+            <a-input type="textarea" rows="6" placeholder="Write feedback..." />
+            <a-button type="primary" class="btn btn--primary" block>
+              Send
+            </a-button>
+          </form>
         </div>
       </div>
     </div>
@@ -139,12 +137,12 @@
   display: grid;
   grid-template-columns: 1fr 384px;
   gap: 24px;
+  margin-top: 24px;
 }
 .essay__left {
   background: white;
   padding: 24px;
   border-radius: 16px;
-  margin-top: 16px;
 }
 .essay__title {
   font-size: 20px;
@@ -163,7 +161,6 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin-top: 16px;
   background: white;
   padding: 24px;
   border-radius: 16px;
@@ -184,8 +181,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 24px;
 }
 .essay__img {
   width: 80px;
@@ -223,5 +218,22 @@
   line-height: 20px;
   color: var(--blue);
   word-break: break-all;
+}
+.back__btn {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--border);
+}
+.back__btn span {
+  font-size: 18px;
+}
+form {
+  display: grid;
+  grid-template-columns: 1fr 74px;
+  gap: 8px;
 }
 </style>

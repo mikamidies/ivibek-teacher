@@ -5,19 +5,14 @@ import PageBanner from "@/components/PageBanner.vue";
 <template>
   <div class="essay-page">
     <PageBanner
-      titleProps="Essay Lab"
-      backgroundProps="#00A155"
-      iconProps="/page-icons/tasks.png"
+      titleProps="Essays"
+      backgroundProps="#0092B8"
+      iconProps="/page-icons/booking.png"
     />
 
     <div class="essay__body">
       <div class="essay__head">
-        <h4 class="essay__title">Essay Lab</h4>
-
-        <NuxtLink to="/essay-lab/create">
-          <Icon name="lucide:plus" class="icon" />
-          New Essay
-        </NuxtLink>
+        <h4 class="essay__title">Essay overview</h4>
       </div>
 
       <div class="essay__content">
@@ -34,44 +29,74 @@ import PageBanner from "@/components/PageBanner.vue";
           </thead>
           <tbody>
             <tr>
-              <td>Harvard University</td>
+              <td class="university">
+                <NuxtImg
+                  src="/images/cumbridge.png"
+                  width="20"
+                  height="20"
+                  alt="university"
+                />
+                Harvard University
+              </td>
               <td>John Doe</td>
               <td>
                 School students should be allowed to curate their high school
                 curriculum.
               </td>
               <td>$50</td>
-              <td>Yes</td>
+              <td>
+                <span class="status btn btn--secondary">Completed</span>
+              </td>
               <td>
                 <NuxtLink to="/essay-lab/edit" class="btn btn--secondary">
-                  <Icon name="lucide:ellipsis-vertical" class="icon" />
+                  <Icon name="lucide:eye" class="icon" />
                 </NuxtLink>
               </td>
             </tr>
             <tr>
-              <td>Stanford University</td>
+              <td class="university">
+                <NuxtImg
+                  src="/images/cumbridge.png"
+                  width="20"
+                  height="20"
+                  alt="university"
+                />
+                Harvard University
+              </td>
               <td>Jane Smith</td>
               <td>Should the death sentence be implemented globally?</td>
               <td>$40</td>
-              <td>No</td>
+              <td>
+                <span class="status btn btn--secondary">Completed</span>
+              </td>
               <td>
                 <NuxtLink to="/essay-lab/edit" class="btn btn--secondary">
-                  <Icon name="lucide:ellipsis-vertical" class="icon" />
+                  <Icon name="lucide:eye" class="icon" />
                 </NuxtLink>
               </td>
             </tr>
             <tr>
-              <td>MIT</td>
+              <td class="university">
+                <NuxtImg
+                  src="/images/cumbridge.png"
+                  width="20"
+                  height="20"
+                  alt="university"
+                />
+                Harvard University
+              </td>
               <td>Emily Johnson</td>
               <td>
                 It should be illegal to use certain types of animals for
                 experiments and other research purposes.
               </td>
               <td>$60</td>
-              <td>Yes</td>
+              <td>
+                <span class="status btn btn--secondary">Completed</span>
+              </td>
               <td>
                 <NuxtLink to="/essay-lab/edit" class="btn btn--secondary">
-                  <Icon name="lucide:ellipsis-vertical" class="icon" />
+                  <Icon name="lucide:eye" class="icon" />
                 </NuxtLink>
               </td>
             </tr>
@@ -114,5 +139,10 @@ import PageBanner from "@/components/PageBanner.vue";
   border: 1px solid var(--blue);
   padding: 10px 12px;
   border-radius: 8px;
+}
+.university {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>

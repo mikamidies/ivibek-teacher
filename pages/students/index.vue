@@ -6,8 +6,8 @@ import PageBanner from "@/components/PageBanner.vue";
   <div class="booking-page">
     <PageBanner
       titleProps="Teachers"
-      backgroundProps="#00A155"
-      iconProps="/page-icons/tasks.png"
+      backgroundProps="#0092B8"
+      iconProps="/page-icons/academics.png"
     />
     <div class="teachers__body">
       <div class="teachers__top">
@@ -135,7 +135,7 @@ import PageBanner from "@/components/PageBanner.vue";
   padding: 24px;
   background: #ffffff;
   border-radius: 16px;
-  margin-top: 16px;
+  margin-top: 24px;
 }
 .teachers__top {
   display: flex;
