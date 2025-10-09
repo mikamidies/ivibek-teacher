@@ -162,6 +162,14 @@ import PageBanner from "@/components/PageBanner.vue";
   border: 0;
   padding: 10px 12px;
 }
+@media (max-width: 1660px) {
+  .teachers__top-left :deep(.ant-select) {
+    width: 280px;
+  }
+  .search__input {
+    width: 280px;
+  }
+}
 .teachers__top-right span {
   position: absolute;
   top: 50%;

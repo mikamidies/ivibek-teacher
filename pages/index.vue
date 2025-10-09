@@ -321,5 +321,6 @@ const sessions = [
   font-size: 14px;
   line-height: 20px;
   color: var(--light-grey);
+  text-align: right;
 }
 </style>

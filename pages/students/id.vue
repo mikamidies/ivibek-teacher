@@ -310,7 +310,7 @@ const handleOk = (e) => {
 .teacher-page {
   padding: 24px 24px 120px 24px;
   background: var(--border);
-  min-height: 100vh;
+  height: 100vh;
   overflow: auto;
 }
 .teacher__card {

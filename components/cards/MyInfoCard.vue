@@ -61,6 +61,7 @@
   background: white;
   border-radius: 16px;
   padding: 24px;
+  height: max-content;
 }
 .header {
   display: flex;
