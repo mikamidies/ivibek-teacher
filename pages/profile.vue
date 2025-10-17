@@ -4,6 +4,8 @@ definePageMeta({
 });
 
 import { ref } from "vue";
+const { user } = useAuth();
+import dayjs from "dayjs";
 
 const visible = ref(false);
 const showModal = () => {
@@ -48,6 +50,7 @@ const gender = [
 </script>
 
 <template>
+  {{ user }}
   <div class="profile-page">
     <div class="profile__top">
       <div class="profile__top-left">
@@ -64,19 +67,17 @@ const gender = [
           </button>
         </div>
         <div>
-          <h3 class="profile__name">Yu Jimin</h3>
-          <p class="profile__email">aespa@naver.com</p>
-          <p class="profile__apply">Apply year: 2023/2024</p>
+          <h3 class="profile__name">{{ user.info?.fullName || "N/A" }}</h3>
+          <p class="profile__email">{{ user.info?.email || "N/A" }}</p>
+          <p class="profile__apply">
+            Joined {{ dayjs(user?.joinedAt).format("MMM DD, YYYY") }}
+          </p>
         </div>
       </div>
       <div class="modal__price">
         <div class="modal__price-hourly">
-          <p>$50</p>
+          <p>${{ user.pricing?.meetingHourPrice || "N/A" }}</p>
           <span>Hourly Rate</span>
-        </div>
-        <div class="modal__price-essay">
-          <p>$24</p>
-          <span>Essay Rate</span>
         </div>
       </div>
     </div>
@@ -312,7 +313,6 @@ const gender = [
   font-weight: 500;
   font-size: 20px;
   line-height: 28px;
-  margin-bottom: 16px;
 }
 .profile__about-head,
 .profile__details-head {
@@ -353,8 +353,9 @@ const gender = [
   line-height: 24px;
 }
 .modal__price {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   gap: 16px;
 }
 .modal__price-hourly,
@@ -383,5 +384,11 @@ const gender = [
 .modal__price-essay {
   background: var(--light-green);
   color: var(--green);
+}
+.profile__details-edit span,
+.profile__about-head span {
+  width: 16px;
+  height: 16px;
+  color: var(--light-grey);
 }
 </style>

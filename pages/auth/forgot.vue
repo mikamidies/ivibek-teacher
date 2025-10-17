@@ -5,28 +5,27 @@ definePageMeta({
   layout: "auth",
 });
 
-const { login } = useAuth();
+const { forgotPassword } = useAuth();
 
-const username = ref("");
-const password = ref("");
-const remember = ref(false);
+const email = ref("");
 const loading = ref(false);
+const sent = ref(false);
 
-const handleLogin = async () => {
-  if (!username.value || !password.value) {
-    message.error("Заполните все поля");
+const handleForgot = async () => {
+  if (!email.value) {
+    message.error("Введите email");
     return;
   }
 
   loading.value = true;
 
-  const result = await login(username.value, password.value, remember.value);
+  const result = await forgotPassword(email.value);
 
   loading.value = false;
 
   if (result.success) {
-    message.success("Вход выполнен успешно!");
-    navigateTo("/");
+    sent.value = true;
+    message.success("Письмо для сброса пароля отправлено на ваш email");
   } else {
     message.error(result.error);
   }
@@ -41,31 +40,23 @@ const handleLogin = async () => {
       </div>
       <div class="login__body">
         <div class="login__header">
-          <h4 class="login__title">Log in</h4>
-          <p class="login__sub">Welcome back please enter your details.</p>
+          <h4 class="login__title">Forgot Password?</h4>
+          <p class="login__sub" v-if="!sent">
+            Enter your email and we'll send you a reset link.
+          </p>
+          <p class="login__sub" v-else style="color: var(--primary)">
+            Check your email for reset instructions!
+          </p>
         </div>
-        <form class="login__form" @submit.prevent="handleLogin">
+        <form class="login__form" @submit.prevent="handleForgot" v-if="!sent">
           <a-input
-            v-model:value="username"
-            placeholder="Username"
-            class="login__input"
-            :disabled="loading"
-          />
-          <a-input-password
-            v-model:value="password"
-            placeholder="Password"
+            v-model:value="email"
+            type="email"
+            placeholder="Email"
             class="login__input"
             :disabled="loading"
           />
 
-          <div class="login__flexer">
-            <a-checkbox v-model:checked="remember" class="login__checkbox">
-              Remember me
-            </a-checkbox>
-            <NuxtLink to="/auth/forgot" class="login__forgot">
-              Forgot Password?
-            </NuxtLink>
-          </div>
           <div class="login__buttons">
             <a-button
               type="primary"
@@ -73,16 +64,22 @@ const handleLogin = async () => {
               html-type="submit"
               :loading="loading"
             >
-              Log in
+              Send Reset Link
             </a-button>
             <div class="login__link">
-              <p>Don't have an account?</p>
-              <NuxtLink to="/auth/register" class="login__register">
-                Sign up
+              <NuxtLink to="/auth/login" class="login__register">
+                Back to Login
               </NuxtLink>
             </div>
           </div>
         </form>
+        <div v-else class="login__buttons">
+          <NuxtLink to="/auth/login">
+            <a-button type="primary" class="login__btn">
+              Back to Login
+            </a-button>
+          </NuxtLink>
+        </div>
       </div>
     </div>
   </div>
@@ -142,22 +139,6 @@ const handleLogin = async () => {
   height: 48px;
   border-radius: 12px;
 }
-.login__flexer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.login__checkbox .ant-checkbox-inner {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-}
-.login__forgot {
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--primary);
-}
 .login__buttons {
   display: flex;
   flex-direction: column;
@@ -169,7 +150,6 @@ const handleLogin = async () => {
   border-radius: 12px;
   font-weight: 600;
   font-size: 16px;
-  line-height: 24px;
   line-height: 100%;
 }
 .login__link {

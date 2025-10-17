@@ -1,3 +1,7 @@
+<script setup>
+const { user } = useAuth();
+</script>
+
 <template>
   <div class="PersonalCard">
     <NuxtLink to="/profile">
@@ -9,8 +13,10 @@
         format="webp"
       />
       <div>
-        <h3>Yu Jimin</h3>
-        <p>aespa@naver.com</p>
+        <h3>
+          {{ user.info?.fullName || "N/A" }}
+        </h3>
+        <p>{{ user.info?.email || "N/A" }}</p>
       </div>
     </NuxtLink>
   </div>

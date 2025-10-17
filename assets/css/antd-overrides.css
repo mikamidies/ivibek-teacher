@@ -137,3 +137,28 @@
 .ant-collapse-content-box {
   padding: 0 !important;
 }
+.auth .login__input {
+  border-radius: 8px !important;
+  border: 1px solid var(--border) !important;
+}
+.auth .ant-select-selector {
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+}
+.auth .ant-select-selection-item {
+  display: flex;
+  align-items: center;
+  padding: 0 12px !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+.auth .ant-picker-date-panel {
+  width: auto !important ;
+}
+.ant-select-selection-item {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+}

@@ -1,17 +1,21 @@
+<script setup>
+const { user } = useAuth();
+</script>
+
 <template>
   <div class="info__card">
     <div class="header">
       <h4 class="title">My profile</h4>
       <NuxtLink to="/profile" class="header__link">
-        <Icon name="lucide:ellipsis-vertical" />
+        <Icon name="lucide:pencil" />
       </NuxtLink>
     </div>
     <div class="info">
       <div class="person">
         <NuxtImg src="/images/person.jpg" alt="" class="person__img" />
         <div class="person__info">
-          <h4 class="person__name">Yu Jimin</h4>
-          <p class="person__role">Teacher</p>
+          <h4 class="person__name">{{ user.info?.fullName || "N/A" }}</h4>
+          <p class="person__role">{{ user.info?.email || "N/A" }}</p>
         </div>
       </div>
       <div class="items">
@@ -160,5 +164,10 @@
   font-weight: 500;
   font-size: 20px;
   line-height: 28px;
+}
+.header__link span {
+  width: 16px;
+  height: 16px;
+  color: var(--light-grey);
 }
 </style>
