@@ -6,6 +6,7 @@ definePageMeta({
 });
 
 const { register } = useAuth();
+const { fetchCountries, fetchUniversities, fetchFaculties } = useCommon();
 
 const username = ref("");
 const email = ref("");
@@ -13,13 +14,25 @@ const fullName = ref("");
 const password = ref("");
 const confirmPassword = ref("");
 const gender = ref("MALE");
-const dateOfBirth = ref("");
-const countryId = ref(1);
+const dateOfBirth = ref(null);
+const countryId = ref(null);
 const meetingHourPrice = ref(null);
 const universityId = ref(null);
 const majorId = ref(null);
 const agree = ref(false);
 const loading = ref(false);
+
+// Локальные данные для селектов
+const countries = ref([]);
+const universities = ref([]);
+const faculties = ref([]);
+
+// Загружаем справочники при монтировании
+onMounted(async () => {
+  countries.value = await fetchCountries();
+  universities.value = await fetchUniversities();
+  faculties.value = await fetchFaculties();
+});
 
 const handleRegister = async () => {
   if (
@@ -57,7 +70,7 @@ const handleRegister = async () => {
     passwordConfirm: confirmPassword.value,
     fullName: fullName.value,
     gender: gender.value,
-    dateOfBirth: dateOfBirth.value,
+    dateOfBirth: dateOfBirth.value.format("YYYY-MM-DD"),
     email: email.value,
     countryId: countryId.value,
     meetingHourPrice: meetingHourPrice.value,
@@ -80,7 +93,7 @@ const handleRegister = async () => {
   <div class="login-page auth">
     <div class="login__wrapper">
       <div class="login__logo">
-        <NuxtImg src="images/brand.svg" alt="Logo" width="120" height="40" />
+        <NuxtImg src="/images/brand.svg" alt="Logo" width="120" height="40" />
       </div>
       <div class="login__body">
         <div class="login__header">
@@ -118,38 +131,90 @@ const handleRegister = async () => {
             <a-select-option value="MALE">Male</a-select-option>
             <a-select-option value="FEMALE">Female</a-select-option>
           </a-select>
+
+          <a-select
+            v-model:value="countryId"
+            show-search
+            placeholder="Select Country"
+            class="login__input"
+            :disabled="loading"
+            :filter-option="
+              (input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase())
+            "
+          >
+            <a-select-option
+              v-for="country in countries"
+              :key="country.id"
+              :value="country.id"
+              :label="country.name"
+            >
+              {{ country.name }}
+            </a-select-option>
+          </a-select>
+
           <a-date-picker
             v-model:value="dateOfBirth"
             placeholder="Date of Birth"
             class="login__input"
             :disabled="loading"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
+            format="DD/MM/YYYY"
+            style="width: 100%"
           />
+
           <a-input-number
             v-model:value="meetingHourPrice"
-            placeholder="Meeting Hour Price (optional)"
+            placeholder="Meeting Hour Price"
             class="login__input"
             :disabled="loading"
             :min="0"
             style="width: 100%"
           />
-          <a-input-number
+
+          <a-select
             v-model:value="universityId"
-            placeholder="University ID (optional)"
+            show-search
+            placeholder="Select University"
             class="login__input"
             :disabled="loading"
-            :min="1"
-            style="width: 100%"
-          />
-          <a-input-number
+            :filter-option="
+              (input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase())
+            "
+            allow-clear
+          >
+            <a-select-option
+              v-for="university in universities"
+              :key="university.id"
+              :value="university.id"
+              :label="university.name"
+            >
+              {{ university.name }}
+            </a-select-option>
+          </a-select>
+
+          <a-select
             v-model:value="majorId"
-            placeholder="Major ID (optional)"
+            show-search
+            placeholder="Select Faculty"
             class="login__input"
             :disabled="loading"
-            :min="1"
-            style="width: 100%"
-          />
+            :filter-option="
+              (input, option) =>
+                option.label.toLowerCase().includes(input.toLowerCase())
+            "
+            allow-clear
+          >
+            <a-select-option
+              v-for="faculty in faculties"
+              :key="faculty.id"
+              :value="faculty.id"
+              :label="faculty.name"
+            >
+              {{ faculty.name }}
+            </a-select-option>
+          </a-select>
+
           <a-input-password
             v-model:value="password"
             placeholder="Password"

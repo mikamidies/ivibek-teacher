@@ -3,24 +3,40 @@ interface Country {
   name: string;
 }
 
+interface Faculty {
+  id: number;
+  name: string;
+}
+
+interface University {
+  id: number;
+  name: string;
+}
+
 interface UserInfo {
+  id: number;
   fullName: string;
   gender: string;
   email: string;
   dateOfBirth: string;
   country: Country;
-  timezone: string | null;
-  about: string | null;
+  faculty: Faculty | null;
+  university: University | null;
+  timezone?: string | null;
+}
+
+interface Pricing {
+  meetingHourPrice: number | null;
 }
 
 interface User {
   id: number;
   username: string;
+  image: string | null;
   info: UserInfo;
+  about: string | null;
+  pricing: Pricing;
   joinedAt: string;
-  meetingHourPrice: number | null;
-  universityId: number | null;
-  majorId: number | null;
 }
 
 interface AuthResponse {
@@ -178,7 +194,7 @@ export const useAuth = () => {
     email?: string;
     dateOfBirth?: string;
     gender?: "MALE" | "FEMALE";
-    about?: string;
+    timezone?: string;
     meetingHourPrice?: number | null;
     universityId?: number | null;
     majorId?: number | null;
@@ -187,24 +203,90 @@ export const useAuth = () => {
       return { success: false, error: "Не авторизован" };
     }
 
-    const currentData = {
-      fullName: user.value?.info?.fullName || "",
-      email: user.value?.info?.email || "",
-      dateOfBirth: user.value?.info?.dateOfBirth || undefined,
-      gender: user.value?.info?.gender || "MALE",
-      countryId: user.value?.info?.country?.id || 1,
-      about: user.value?.info?.about || "",
-    };
-
-    const mergedData = { ...currentData, ...profileData };
-
     try {
-      const data = await $fetch(`${API_BASE}/api/v1/mentor/profile`, {
+      await $fetch(`${API_BASE}/api/v1/mentor/profile`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken.value}`,
+          "Content-Type": "application/json",
         },
-        body: mergedData,
+        body: profileData,
+      });
+
+      await fetchUser();
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Composable error:", error);
+      return {
+        success: false,
+        error: error.data?.message || "Ошибка обновления профиля",
+      };
+    }
+  };
+
+  const updateProfileImage = async (imageFile: File) => {
+    if (!accessToken.value) {
+      return { success: false, error: "Не авторизован" };
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      const response = await fetch(`${API_BASE}/api/v1/common/files/upload`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const uploadResponse = await response.json();
+
+      const imagePath = uploadResponse.filePath;
+
+      if (!imagePath) {
+        throw new Error("Не удалось получить путь к изображению");
+      }
+
+      await $fetch(`${API_BASE}/api/v1/mentor/profile/updateImage`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+          "Content-Type": "application/json",
+        },
+        body: {
+          image: imagePath,
+        },
+      });
+
+      await fetchUser();
+
+      return { success: true };
+    } catch (error: any) {
+      console.error("Image upload error:", error);
+      return {
+        success: false,
+        error: error.message || "Ошибка загрузки фото",
+      };
+    }
+  };
+
+  const updateAbout = async (about: string) => {
+    if (!accessToken.value) {
+      return { success: false, error: "Не авторизован" };
+    }
+
+    try {
+      await $fetch(`${API_BASE}/api/v1/mentor/profile/updateAbout`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+          "Content-Type": "application/json",
+        },
+        body: { about },
       });
 
       await fetchUser();
@@ -213,7 +295,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка обновления профиля",
+        error: error.data?.message || "Ошибка обновления описания",
       };
     }
   };
@@ -248,6 +330,8 @@ export const useAuth = () => {
     refresh,
     fetchUser,
     updateProfile,
+    updateProfileImage,
+    updateAbout,
     resetPassword,
     logout,
   };

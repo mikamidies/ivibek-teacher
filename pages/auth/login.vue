@@ -58,14 +58,14 @@ const handleLogin = async () => {
             :disabled="loading"
           />
 
-          <div class="login__flexer">
+          <!-- <div class="login__flexer">
             <a-checkbox v-model:checked="remember" class="login__checkbox">
               Remember me
             </a-checkbox>
             <NuxtLink to="/auth/forgot" class="login__forgot">
               Forgot Password?
             </NuxtLink>
-          </div>
+          </div> -->
           <div class="login__buttons">
             <a-button
               type="primary"

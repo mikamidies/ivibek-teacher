@@ -6,7 +6,7 @@ const { user } = useAuth();
   <div class="PersonalCard">
     <NuxtLink to="/profile">
       <NuxtImg
-        src="/images/person.jpg"
+        :src="user.image || '/images/default-person.jpg'"
         alt="person"
         width="80"
         height="80"
@@ -14,9 +14,9 @@ const { user } = useAuth();
       />
       <div>
         <h3>
-          {{ user.info?.fullName || "N/A" }}
+          {{ user?.info?.fullName || "N/A" }}
         </h3>
-        <p>{{ user.info?.email || "N/A" }}</p>
+        <p>{{ user?.info?.email || "N/A" }}</p>
       </div>
     </NuxtLink>
   </div>

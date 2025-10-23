@@ -12,10 +12,17 @@ const { user } = useAuth();
     </div>
     <div class="info">
       <div class="person">
-        <NuxtImg src="/images/person.jpg" alt="" class="person__img" />
+        <NuxtImg
+          :src="user.image || '/images/default-person.jpg'"
+          alt="person"
+          width="80"
+          height="80"
+          format="webp"
+          class="person__img"
+        />
         <div class="person__info">
-          <h4 class="person__name">{{ user.info?.fullName || "N/A" }}</h4>
-          <p class="person__role">{{ user.info?.email || "N/A" }}</p>
+          <h4 class="person__name">{{ user?.info?.fullName || "N/A" }}</h4>
+          <p class="person__role">{{ user?.info?.email || "N/A" }}</p>
         </div>
       </div>
       <div class="items">
