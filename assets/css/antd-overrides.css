@@ -87,13 +87,11 @@
   padding: 10px 12px;
   font-size: 14px;
   line-height: 20px;
-  border: 1px solid var(--border) !important;
 }
 .ant-select-selector,
 .ant-picker {
   border-radius: 8px !important;
   height: 42px !important;
-  border: 1px solid var(--border) !important;
 }
 .ant-select-selection-search-input {
   font-size: 14px;
@@ -115,7 +113,6 @@
   background: white;
 }
 .ant-collapse-item {
-  border: 1px solid var(--border) !important;
   border-radius: 16px !important;
   margin-bottom: 16px !important;
 }
@@ -140,13 +137,11 @@
 }
 .auth .login__input {
   border-radius: 8px !important;
-  border: 1px solid var(--border) !important;
 }
 .auth .ant-select-selector {
   padding: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  border: 0 !important;
 }
 .auth .ant-select-selection-item {
   display: flex;
@@ -170,7 +165,6 @@
 .ant-select-selection-placeholder {
   padding-left: 12px !important;
 }
-.ant-input-number {
-  border: 0 !important;
-  border-radius: 8px !important;
+.login__input {
+  height: 48px !important;
 }
