@@ -13,7 +13,7 @@ const { user } = useAuth();
     <div class="info">
       <div class="person">
         <NuxtImg
-          :src="user.image || '/images/default-person.jpg'"
+          :src="user?.image || '/images/default-person.jpg'"
           alt="person"
           width="80"
           height="80"
