@@ -162,9 +162,8 @@ const getStatusLabel = (status) => {
             <h4 class="section__title">Обратная связь</h4>
           </div>
           <form @submit.prevent="handleSendFeedback">
-            <a-textarea
+            <a-input
               v-model:value="feedbackUrl"
-              :rows="6"
               placeholder="Напишите обратную связь..."
               :disabled="sendingFeedback"
             />
@@ -335,8 +334,8 @@ const getStatusLabel = (status) => {
   font-size: 18px;
 }
 form {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 100px;
   gap: 12px;
 }
 .status {

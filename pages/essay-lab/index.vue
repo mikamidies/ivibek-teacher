@@ -59,6 +59,7 @@ const getStatusLabel = (status) => {
     IN_PROGRESS: "В процессе",
     PAID: "Оплачено",
     CANCELLED: "Отменено",
+    COMPLETED: "Завершено",
   };
   return statuses[status] || status;
 };
