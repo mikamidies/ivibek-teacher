@@ -103,7 +103,7 @@ const getStatusLabel = (status) => {
       <div class="essay__left">
         <NuxtLink to="/essay-lab" class="btn btn--secondary back__btn">
           <Icon name="lucide:arrow-left" class="icon" />
-          Назад
+          Back
         </NuxtLink>
         <h4 class="essay__title">
           {{ essay.content?.title || "Без названия" }}
@@ -132,13 +132,13 @@ const getStatusLabel = (status) => {
         </div>
         <div class="essay__text">
           <p v-if="essay.content?.body">{{ essay.content.body }}</p>
-          <p v-else class="no-content">Текст эссе отсутствует</p>
+          <p v-else class="no-content">Empty essay</p>
         </div>
       </div>
       <div class="essay__right">
         <div>
           <div class="right__head">
-            <h4 class="section__title">Студент</h4>
+            <h4 class="section__title">Student</h4>
           </div>
           <div>
             <div class="essay__info">
@@ -147,7 +147,7 @@ const getStatusLabel = (status) => {
               </div>
               <div>
                 <p class="essay__name">
-                  {{ essay.student?.fullName || "Неизвестно" }}
+                  {{ essay.student?.fullName || "Unknown" }}
                 </p>
                 <p class="essay__status">
                   {{ essay.student?.email || "-" }}
@@ -159,12 +159,12 @@ const getStatusLabel = (status) => {
 
         <div v-if="!essay.feedback">
           <div class="right__head">
-            <h4 class="section__title">Обратная связь</h4>
+            <h4 class="section__title">Feedback Link</h4>
           </div>
           <form @submit.prevent="handleSendFeedback">
             <a-input
               v-model:value="feedbackUrl"
-              placeholder="Напишите обратную связь..."
+              placeholder="Write your feedback..."
               :disabled="sendingFeedback"
             />
             <a-button
@@ -173,7 +173,7 @@ const getStatusLabel = (status) => {
               :loading="sendingFeedback"
               block
             >
-              Отправить
+              Send
             </a-button>
           </form>
         </div>
