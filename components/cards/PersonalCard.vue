@@ -5,7 +5,7 @@ const { user } = useAuth();
 <template>
   <div class="PersonalCard">
     <NuxtLink to="/profile">
-      <NuxtImg
+      <img
         :src="user?.image || '/images/default-person.jpg'"
         alt="person"
         width="80"

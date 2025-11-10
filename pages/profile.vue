@@ -179,7 +179,7 @@ const timezones = [
     <div class="profile__top">
       <div class="profile__top-left">
         <div class="profile__img">
-          <NuxtImg
+          <img
             :src="user.image || '/images/default-person.jpg'"
             alt="person"
             width="80"

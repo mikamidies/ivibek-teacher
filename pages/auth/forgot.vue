@@ -25,7 +25,7 @@ const handleForgot = async () => {
 
   if (result.success) {
     sent.value = true;
-    message.success("Письмо для сброса пароля отправлено на ваш email");
+    message.success("Email sent successfully");
   } else {
     message.error(result.error);
   }
@@ -36,7 +36,7 @@ const handleForgot = async () => {
   <div class="login-page auth">
     <div class="login__wrapper">
       <div class="login__logo">
-        <NuxtImg src="images/brand.svg" alt="Logo" width="120" height="40" />
+        <img src="/images/brand.svg" alt="Logo" width="120" height="40" />
       </div>
       <div class="login__body">
         <div class="login__header">

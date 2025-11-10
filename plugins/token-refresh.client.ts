@@ -1,7 +1,8 @@
 export default defineNuxtPlugin(() => {
-  const { refresh, accessToken } = useAuth();
+  const { refresh, accessToken, refreshToken } = useAuth();
 
-  if (accessToken.value) {
+  // Запускаем автообновление токенов каждые 14 минут
+  if (accessToken.value || refreshToken.value) {
     setInterval(async () => {
       await refresh();
     }, 14 * 60 * 1000);

@@ -325,6 +325,7 @@ export const useAuth = () => {
   return {
     user,
     accessToken,
+    refreshToken,
     login,
     register,
     refresh,

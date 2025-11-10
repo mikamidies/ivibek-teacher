@@ -60,7 +60,7 @@
         <div class="essay__item">
           <div class="essay__info">
             <div class="essay__img">
-              <NuxtImg src="/images/person.jpg" alt="Person" />
+              <img src="/images/person.jpg" alt="Person" />
             </div>
             <div>
               <p class="essay__name">Yu Jimin</p>
@@ -74,7 +74,7 @@
         <div class="essay__item">
           <div class="essay__info">
             <div class="essay__img">
-              <NuxtImg src="/images/person.jpg" alt="Person" />
+              <img src="/images/person.jpg" alt="Person" />
             </div>
             <div>
               <p class="essay__name">Yu Jimin</p>

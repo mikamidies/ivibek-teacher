@@ -22,7 +22,7 @@ defineProps({
     </h1>
 
     <div class="bacteria">
-      <NuxtImg
+      <img
         src="/images/bacteria.png"
         alt="Bacteria"
         width="100%"
@@ -31,7 +31,7 @@ defineProps({
     </div>
 
     <div class="icon">
-      <NuxtImg :src="iconProps" alt="Bacteria" width="100%" height="100%" />
+      <img :src="iconProps" alt="Bacteria" width="100%" height="100%" />
     </div>
   </div>
 </template>

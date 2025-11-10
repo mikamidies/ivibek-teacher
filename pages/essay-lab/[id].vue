@@ -13,6 +13,7 @@ const loading = ref(false);
 const essay = ref(null);
 const feedbackUrl = ref("");
 const sendingFeedback = ref(false);
+const copied = ref(false);
 
 onMounted(async () => {
   await loadEssay();
@@ -29,13 +30,13 @@ const loadEssay = async () => {
   if (result.success) {
     essay.value = result.data;
   } else {
-    message.error(result.error || "Не удалось загрузить эссе");
+    message.error(result.error || "Unable to load essay");
   }
 };
 
 const handleSendFeedback = async () => {
   if (!feedbackUrl.value.trim()) {
-    message.warning("Введите текст обратной связи");
+    message.warning("Enter feedback text");
     return;
   }
 
@@ -49,11 +50,11 @@ const handleSendFeedback = async () => {
   sendingFeedback.value = false;
 
   if (result.success) {
-    message.success("Обратная связь успешно отправлена");
+    message.success("Feedback sent successfully");
     feedbackUrl.value = "";
     await loadEssay();
   } else {
-    message.error(result.error || "Ошибка отправки обратной связи");
+    message.error(result.error || "Failed to send feedback");
   }
 };
 
@@ -68,14 +69,34 @@ const formatDate = (date) => {
 
 const getStatusLabel = (status) => {
   const statuses = {
-    UNPAID: "Не оплачено",
-    PAID: "Оплачено",
-    PENDING: "В ожидании",
-    IN_PROGRESS: "В процессе",
-    COMPLETED: "Завершено",
-    CANCELLED: "Отменено",
+    UNPAID: "Not Paid",
+    PAID: "Paid",
+    PENDING: "Pending",
+    IN_PROGRESS: "Processing",
+    COMPLETED: "Completed",
+    CANCELLED: "Cancelled",
   };
   return statuses[status] || status;
+};
+
+const copyToClipboard = async () => {
+  if (!essay.value?.content?.body) {
+    message.warning("No text to copy");
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(essay.value.content.body);
+    copied.value = true;
+    message.success("Text copied to clipboard");
+
+    setTimeout(() => {
+      copied.value = false;
+    }, 20000);
+  } catch (error) {
+    message.error("Failed to copy text");
+    console.error("Copy failed:", error);
+  }
 };
 </script>
 
@@ -93,20 +114,33 @@ const getStatusLabel = (status) => {
 
     <div v-else-if="!essay" class="essay__empty">
       <Icon name="lucide:file-x" class="empty-icon" />
-      <p>Эссе не найдено</p>
+      <p>Essay not found</p>
       <NuxtLink to="/essay-lab" class="btn btn--primary">
-        Назад к списку
+        Back to list
       </NuxtLink>
     </div>
 
     <div v-else class="essay__grid">
       <div class="essay__left">
-        <NuxtLink to="/essay-lab" class="btn btn--secondary back__btn">
-          <Icon name="lucide:arrow-left" class="icon" />
-          Back
-        </NuxtLink>
+        <div class="top__top">
+          <NuxtLink to="/essay-lab" class="btn btn--secondary back__btn">
+            <Icon name="lucide:arrow-left" class="icon" />
+            Back
+          </NuxtLink>
+          <div
+            class="copy__btn"
+            @click="copyToClipboard"
+            :class="{ copied: copied }"
+          >
+            <Icon
+              :name="copied ? 'lucide:check' : 'lucide:copy'"
+              class="link-icon"
+            />
+            <span>{{ copied ? "Copied" : "Copy text" }}</span>
+          </div>
+        </div>
         <h4 class="essay__title">
-          {{ essay.content?.title || "Без названия" }}
+          {{ essay.content?.title || "Unnamed" }}
         </h4>
         <div class="essay__meta">
           <div class="meta__item">
@@ -143,7 +177,7 @@ const getStatusLabel = (status) => {
           <div>
             <div class="essay__info">
               <div class="essay__img">
-                <NuxtImg src="/images/person.jfif" alt="Student" />
+                <img src="/images/person.jfif" alt="Student" />
               </div>
               <div>
                 <p class="essay__name">
@@ -180,13 +214,13 @@ const getStatusLabel = (status) => {
 
         <div v-else>
           <div class="right__head">
-            <h4 class="section__title">Обратная связь</h4>
+            <h4 class="section__title">Feedback</h4>
           </div>
           <div class="feedback__completed">
             <Icon name="lucide:check-circle" class="completed-icon" />
-            <p class="feedback__sent">Обратная связь отправлена</p>
+            <p class="feedback__sent">Feedback sent</p>
             <div class="feedback__content">
-              <p class="feedback__label">Ваш ответ:</p>
+              <p class="feedback__label">Your response:</p>
               <p class="feedback__text">{{ essay.feedback.feedbackUrl }}</p>
             </div>
           </div>
@@ -197,6 +231,33 @@ const getStatusLabel = (status) => {
 </template>
 
 <style scoped>
+.top__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.copy__btn {
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+.copy__btn:hover {
+  background: #e5e7eb;
+}
+.copy__btn.copied {
+  background: #e8f5e9;
+  color: #388e3c;
+}
+.copy__btn.copied .link-icon {
+  color: #388e3c;
+}
 .essay__edit-page {
   padding: 24px 24px 120px 24px;
   background: var(--border);
@@ -233,6 +294,7 @@ const getStatusLabel = (status) => {
   background: white;
   padding: 24px;
   border-radius: 16px;
+  height: fit-content;
 }
 .essay__title {
   font-size: 20px;

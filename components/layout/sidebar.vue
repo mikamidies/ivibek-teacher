@@ -14,7 +14,7 @@ const { logout } = useAuth();
   <div class="sidebar">
     <div class="slider">
       <div class="top">
-        <NuxtImg
+        <img
           src="/images/brand.svg"
           alt="Brand"
           class="logo"

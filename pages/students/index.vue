@@ -31,7 +31,7 @@ import PageBanner from "@/components/PageBanner.vue";
           <NuxtLink to="/students/id">
             <div class="teachers__item-top">
               <div class="teachers__item-img">
-                <NuxtImg
+                <img
                   src="/images/person.jpg"
                   alt="Teacher"
                   width="56"
@@ -54,7 +54,7 @@ import PageBanner from "@/components/PageBanner.vue";
           <NuxtLink to="/students/id">
             <div class="teachers__item-top">
               <div class="teachers__item-img">
-                <NuxtImg
+                <img
                   src="/images/person.jpg"
                   alt="Teacher"
                   width="56"
@@ -77,7 +77,7 @@ import PageBanner from "@/components/PageBanner.vue";
           <NuxtLink to="/students/id">
             <div class="teachers__item-top">
               <div class="teachers__item-img">
-                <NuxtImg
+                <img
                   src="/images/person.jpg"
                   alt="Teacher"
                   width="56"
@@ -100,7 +100,7 @@ import PageBanner from "@/components/PageBanner.vue";
           <NuxtLink to="/students/id">
             <div class="teachers__item-top">
               <div class="teachers__item-img">
-                <NuxtImg
+                <img
                   src="/images/person.jpg"
                   alt="Teacher"
                   width="56"

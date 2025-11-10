@@ -1,10 +1,14 @@
 export default defineNuxtPlugin(() => {
-  const { logout } = useAuth();
+  const { logout, refresh, accessToken } = useAuth();
 
   $fetch.create({
-    onResponseError({ response }) {
+    async onResponseError({ response }) {
       if (response.status === 401) {
-        logout();
+        // Пробуем обновить токен перед логаутом
+        const refreshed = await refresh();
+        if (!refreshed) {
+          logout();
+        }
       }
     },
   });
