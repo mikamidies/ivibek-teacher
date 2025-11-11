@@ -1,3 +1,5 @@
+import { isTokenExpired } from "~/utils/jwt";
+
 interface Country {
   id: number;
   name: string;
@@ -45,24 +47,30 @@ interface AuthResponse {
   user?: User;
 }
 
+// Промис для защиты от множественных одновременных refresh
+let refreshPromise: Promise<boolean> | null = null;
+
 export const useAuth = () => {
   const user = useState<User | null>("user", () => null);
+  // Увеличено до 7 дней, реальное истечение определяется JWT exp
   const accessToken = useCookie("access_token", {
-    maxAge: 60 * 15,
+    maxAge: 60 * 60 * 24 * 7, // 7 дней
   });
   const refreshToken = useCookie("refresh_token", {
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 30, // 30 дней
   });
 
   const API_BASE = "https://api.ivybek.com";
 
   const logout = () => {
+    console.log("🚪 Logging out...");
     accessToken.value = null;
     refreshToken.value = null;
     user.value = null;
+    refreshPromise = null; // Сброс промиса
 
     if (import.meta.client) {
-      window.location.href = "/auth/login";
+      navigateTo("/auth/login");
     }
   };
 
@@ -138,36 +146,65 @@ export const useAuth = () => {
     }
   };
 
-  const refresh = async () => {
-    if (!refreshToken.value) return false;
+  const refresh = async (): Promise<boolean> => {
+    // Защита от множественных одновременных вызовов refresh
+    if (refreshPromise) {
+      console.log("🔄 Refresh already in progress, waiting...");
+      return refreshPromise;
+    }
 
-    try {
-      const data: AuthResponse = await $fetch(
-        `${API_BASE}/api/v1/mentor/auth/refresh`,
-        {
-          method: "POST",
-          body: { refreshToken: refreshToken.value },
-        }
-      );
-
-      accessToken.value = data.accessToken;
-      refreshToken.value = data.refreshToken;
-
-      if (data.user) {
-        user.value = data.user;
-      }
-
-      return true;
-    } catch {
-      logout();
+    if (!refreshToken.value) {
+      console.log("❌ No refresh token available");
       return false;
     }
+
+    console.log("🔄 Refreshing tokens...");
+
+    refreshPromise = (async () => {
+      try {
+        const data: AuthResponse = await $fetch(
+          `${API_BASE}/api/v1/mentor/auth/refresh`,
+          {
+            method: "POST",
+            body: { refreshToken: refreshToken.value },
+          }
+        );
+
+        accessToken.value = data.accessToken;
+        refreshToken.value = data.refreshToken;
+
+        if (data.user) {
+          user.value = data.user;
+        }
+
+        console.log("✅ Tokens refreshed successfully");
+        return true;
+      } catch (error) {
+        console.error("❌ Error refreshing tokens:", error);
+        logout();
+        return false;
+      } finally {
+        refreshPromise = null;
+      }
+    })();
+
+    return refreshPromise;
   };
 
   const fetchUser = async () => {
+    // Проверяем истёк ли токен
+    if (isTokenExpired(accessToken.value)) {
+      console.log("⏰ Access token expired, refreshing...");
+      const refreshed = await refresh();
+      if (!refreshed || !accessToken.value) {
+        console.log("❌ Failed to refresh token");
+        return;
+      }
+    }
+
     if (!accessToken.value) {
-      await refresh();
-      if (!accessToken.value) return;
+      console.log("❌ No access token available");
+      return;
     }
 
     try {
@@ -325,6 +362,7 @@ export const useAuth = () => {
   return {
     user,
     accessToken,
+    refreshToken,
     login,
     register,
     refresh,
