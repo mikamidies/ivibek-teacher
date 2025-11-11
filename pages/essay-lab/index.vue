@@ -35,7 +35,7 @@ const loadEssays = async (page = 0) => {
       total: result.data.totalElements,
     };
   } else {
-    message.error(result.error || "Не удалось загрузить эссе");
+    message.error(result.error || "Unable to load essays");
   }
 };
 
@@ -54,12 +54,12 @@ const formatDate = (date) => {
 
 const getStatusLabel = (status) => {
   const statuses = {
-    UNPAID: "Не оплачено",
-    PENDING: "В ожидании",
-    IN_PROGRESS: "В процессе",
-    PAID: "Оплачено",
-    CANCELLED: "Отменено",
-    COMPLETED: "Завершено",
+    UNPAID: "Unpaid",
+    PENDING: "Pending",
+    IN_PROGRESS: "In Progress",
+    PAID: "Paid",
+    CANCELLED: "Cancelled",
+    COMPLETED: "Completed",
   };
   return statuses[status] || status;
 };
@@ -89,18 +89,18 @@ const truncateText = (text, maxLength = 60) => {
 
         <div v-else-if="!essays.length" class="essay__empty">
           <Icon name="lucide:file-text" class="empty-icon" />
-          <p>Пока нет эссе</p>
+          <p>No essays yet</p>
         </div>
 
         <div v-else>
           <table>
             <thead>
               <tr>
-                <th>Студент</th>
-                <th>Название</th>
-                <th>Тип</th>
-                <th>Статус</th>
-                <th>Создано</th>
+                <th>Student</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Created</th>
                 <th></th>
               </tr>
             </thead>
@@ -130,7 +130,7 @@ const truncateText = (text, maxLength = 60) => {
                   <NuxtLink
                     :to="`/essay-lab/${essay.id}`"
                     class="btn btn--secondary"
-                    title="Просмотр"
+                    title="View"
                   >
                     <Icon name="lucide:eye" class="icon" />
                   </NuxtLink>

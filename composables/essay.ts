@@ -21,7 +21,7 @@ export const useEssay = () => {
 
   const fetchEssays = async (page = 0, size = 10) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
 
     try {
@@ -40,14 +40,14 @@ export const useEssay = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка загрузки эссе",
+        error: error.data?.message || "Error loading essays",
       };
     }
   };
 
   const fetchEssayById = async (id: number) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
     try {
       const data = await $fetch(
@@ -63,14 +63,14 @@ export const useEssay = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка получения эссе",
+        error: error.data?.message || "Error fetching essay",
       };
     }
   };
 
   const sendFeedback = async (id: number, payload: SendFeedbackPayload) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
 
     try {
@@ -90,7 +90,7 @@ export const useEssay = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка отправки обратной связи",
+        error: error.data?.message || "Error sending feedback",
       };
     }
   };

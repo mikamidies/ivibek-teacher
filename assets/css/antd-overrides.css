@@ -168,3 +168,9 @@
 .login__input {
   height: 48px !important;
 }
+.ant-input-number {
+  border-radius: 8px !important;
+}
+.light__borders .ant-select-selector {
+  border: 1px solid var(--border-darker) !important;
+}

@@ -93,9 +93,7 @@ const handleOk = async () => {
     majorId: form.value.majorId,
   };
 
-  console.log("📤 Sending profile update:", body);
   const result = await updateProfile(body);
-  console.log("📥 Update result:", result);
 
   loading.value = false;
 

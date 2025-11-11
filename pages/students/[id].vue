@@ -1,17 +1,143 @@
 <script setup>
+import dayjs from "dayjs";
+
 const infoShow = ref(true);
 const tasksShow = ref(false);
 const visible = ref(false);
+const loading = ref(true);
+const submitLoading = ref(false);
+const assignmentsLoading = ref(false);
+
+const form = ref({
+  title: "",
+  description: "",
+  startDate: null,
+  endDate: null,
+});
+
 const showModal = () => {
   visible.value = true;
 };
-const handleOk = (e) => {
-  visible.value = false;
+
+const handleOk = async () => {
+  try {
+    submitLoading.value = true;
+
+    if (
+      !form.value.title ||
+      !form.value.description ||
+      !form.value.startDate ||
+      !form.value.endDate
+    ) {
+      message.error("Пожалуйста, заполните все поля");
+      return;
+    }
+
+    const payload = {
+      studentId: studentId,
+      title: form.value.title,
+      description: form.value.description,
+      startDate: dayjs(form.value.startDate).format("YYYY-MM-DD"),
+      endDate: dayjs(form.value.endDate).format("YYYY-MM-DD"),
+    };
+
+    await assignTask(payload);
+
+    message.success("Задание успешно назначено");
+
+    form.value = {
+      title: "",
+      description: "",
+      startDate: null,
+      endDate: null,
+    };
+
+    visible.value = false;
+
+    await loadAssignments();
+  } catch (error) {
+    console.error("Error assigning task:", error);
+    message.error("Ошибка при назначении задания");
+  } finally {
+    submitLoading.value = false;
+  }
 };
+
+const { fetchStudentById, assignTask, fetchStudentAssignments } = useStudents();
+const route = useRoute();
+const studentId = Number(route.params.id);
+
+const student = ref(null);
+const assignments = ref([]);
+
+const loadAssignments = async () => {
+  try {
+    assignmentsLoading.value = true;
+    assignments.value = await fetchStudentAssignments(studentId);
+  } catch (error) {
+    console.error("Error loading assignments:", error);
+  } finally {
+    assignmentsLoading.value = false;
+  }
+};
+
+const getStatusConfig = (status) => {
+  switch (status) {
+    case "COMPLETED":
+      return {
+        class: "",
+        icon: "lucide:check",
+        text: "Выполнено",
+      };
+    case "ASSIGNED":
+      return {
+        class: "yellow status",
+        icon: "lucide:clock",
+        text: "Назначено",
+      };
+    case "PENDING":
+      return {
+        class: "yellow status",
+        icon: "lucide:clock",
+        text: "В ожидании",
+      };
+    default:
+      return {
+        class: "yellow status",
+        icon: "lucide:clock",
+        text: status,
+      };
+  }
+};
+
+onMounted(async () => {
+  try {
+    student.value = await fetchStudentById(studentId);
+    await loadAssignments();
+  } catch (error) {
+    console.error("Error loading student:", error);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>
 
 <template>
-  <div class="teacher-page">
+  <div v-if="loading" class="teacher-page">
+    <div class="teacher__card" style="padding: 48px; text-align: center">
+      <a-spin size="large" />
+      <p style="margin-top: 16px">Loading student data...</p>
+    </div>
+  </div>
+  <div v-else-if="!student" class="teacher-page">
+    <div class="teacher__card" style="padding: 48px; text-align: center">
+      <h2>Student not found</h2>
+      <NuxtLink to="/students" style="margin-top: 16px; display: inline-block"
+        >Back to students</NuxtLink
+      >
+    </div>
+  </div>
+  <div v-else class="teacher-page">
     <div class="teacher__top teacher__card">
       <img src="/images/bacteria-blue.png" alt="Banner" class="bacteria" />
       <div class="teacher__top-top">
@@ -24,15 +150,15 @@ const handleOk = (e) => {
         <div class="teacher__top-left">
           <div class="teacher__top-img">
             <img
-              src="/images/person.jpg"
+              :src="student?.image || '/images/default-person.jpg'"
               alt="Teacher"
               width="96"
               height="96"
             />
           </div>
           <div class="teacher__top-info">
-            <h4 class="teacher__top-name">Yu Jimin</h4>
-            <span class="teacher__top-sub"> Computer Science </span>
+            <h4 class="teacher__top-name">{{ student?.info.fullName }}</h4>
+            <span class="teacher__top-sub"> {{ student?.info.email }} </span>
           </div>
         </div>
       </div>
@@ -66,31 +192,37 @@ const handleOk = (e) => {
             <div class="modal__details-items">
               <div class="modal__details-item">
                 <Icon name="lucide:mail" />
-                <p>yujimin@naever.com</p>
-              </div>
-              <div class="modal__details-item">
-                <Icon name="lucide:phone" />
-                <p>+1 234 567 8901</p>
+                <p>
+                  {{ student?.info.email || "Email not set" }}
+                </p>
               </div>
               <div class="modal__details-item">
                 <Icon name="lucide:map-pin" />
-                <p>Seoul, South Korea</p>
+                <p>
+                  {{ student?.info.country?.name || "Address not set" }}
+                </p>
               </div>
               <div class="modal__details-item">
                 <Icon name="lucide:calendar" />
-                <p>Feb 2, 2000</p>
+                <p>
+                  {{
+                    student?.info.dateOfBirth
+                      ? dayjs(student?.info.dateOfBirth).format("MMM DD, YYYY")
+                      : "Not set"
+                  }}
+                </p>
               </div>
               <div class="modal__details-item">
-                <Icon name="lucide:languages" />
-                <p>English, Korean</p>
+                <Icon name="lucide:user" />
+                <p>
+                  {{ student?.info.gender || "Gender not set" }}
+                </p>
               </div>
               <div class="modal__details-item">
                 <Icon name="lucide:clock" />
-                <p>Available: Mon - Fri, 9 AM - 5 PM</p>
-              </div>
-              <div class="modal__details-item">
-                <Icon name="lucide:globe" />
-                <p>Asia, South Korea</p>
+                <p>
+                  {{ student?.info.timezone || "Timezone not set" }}
+                </p>
               </div>
             </div>
           </div>
@@ -99,101 +231,83 @@ const handleOk = (e) => {
       <div class="teacher__right">
         <div class="teacher__desc teacher__card">
           <h4 class="section__title">About student</h4>
-          <p>
-            Yu Jimin is a dedicated Computer Science teacher with over 10 years
-            of experience in both academic and industry settings. She holds a
-            Bachelor's Degree in Computer Science from the University of
-            Cambridge and has worked as a Software Engineer at leading tech
-            companies. Her teaching philosophy centers around making complex
-            concepts accessible and engaging for students of all levels. Yujimin
-            specializes in software development, algorithms, and data
-            structures, and is passionate about helping students achieve their
-            academic and career goals. academic and career goals. She is
-            committed to fostering a supportive learning environment and
-            encourages students to pursue research, internships, and real-world
-            projects. Yu Jimin regularly mentors students for coding
-            competitions and guides them in preparing for university admissions
-            and tech careers. Her approachable teaching style and dedication to
-            student success have made her a respected mentor among her peers and
-            students alike.
-          </p>
+          <p v-html="student?.about || 'No data'"></p>
         </div>
       </div>
     </div>
     <div class="student__grid" v-show="tasksShow">
-      <div class="student__task-item">
-        <div class="student__item-status">
-          <Icon name="lucide:check" class="icon" />
-          Done
+      <div
+        class="student__task-item"
+        v-for="item in assignments"
+        :key="item.id"
+      >
+        <div class="student__task-top">
+          <div class="student__item-status">
+            <Icon name="lucide:check" class="icon" />
+            {{ item?.status }}
+          </div>
+          <h4 class="student__task-name">{{ item?.title }}</h4>
+          <p class="student__task-sub">
+            {{ item?.description }}
+          </p>
         </div>
-        <h4 class="student__task-name">Memorize 1200 words by tonight.</h4>
-        <p class="student__task-sub">
-          Agar 1200 ta so‘zni bir kunda yodlashni nazarda tutsang, bu juda katta
-          yuklama bo‘ladi. Odatda inson bir kunda samarali tarzda 50–100 ta
-          so‘zni yodlashi mumkin (mantiqan foydalanish bilan). Shuning uchun
-          1200 ta so‘z bir kunda emas, balki qismlarga bo‘lib, samarali
-          metodlarda yodlash kerak
-        </p>
         <div class="student__task-bottom">
           <p class="student__task-from">
             <Icon name="lucide:calendar" class="icon" />
-            22.05.2025
+            {{ item?.startDate }}
           </p>
           <p class="student__task-to">
             <Icon name="lucide:calendar" class="icon" />
-            25.05.2025
-          </p>
-        </div>
-      </div>
-      <div class="student__task-item">
-        <div class="student__item-status yellow status">
-          <Icon name="lucide:clock" class="icon" />
-          Waiting
-        </div>
-        <h4 class="student__task-name">Memorize 1200 words by tonight</h4>
-        <p class="student__task-sub">
-          Agar 1200 ta so‘zni bir kunda yodlashni nazarda tutsang, bu juda katta
-          yuklama bo‘ladi. Odatda inson bir kunda samarali tarzda 50–100 ta
-          so‘zni yodlashi mumkin (mantiqan foydalanish bilan). Shuning uchun
-          1200 ta so‘z bir kunda emas, balki qismlarga bo‘lib, samarali
-          metodlarda yodlash kerak
-        </p>
-        <div class="student__task-bottom">
-          <p class="student__task-from">
-            <Icon name="lucide:calendar" class="icon" />
-            22.05.2025
-          </p>
-          <p class="student__task-to">
-            <Icon name="lucide:calendar" class="icon" />
-            25.05.2025
+            {{ item?.endDate }}
           </p>
         </div>
       </div>
     </div>
   </div>
 
-  <a-modal v-model:visible="visible" title="Assign New Task" @ok="handleOk">
+  <a-modal
+    v-model:visible="visible"
+    title="Назначить новое задание"
+    @ok="handleOk"
+    :confirm-loading="submitLoading"
+    ok-text="Назначить"
+    cancel-text="Отмена"
+  >
     <a-form :model="form" layout="vertical">
-      <a-form-item label="Title" name="title" style="grid-column: 1/3">
-        <a-input placeholder="Enter task title" />
+      <a-form-item label="Название" name="title" style="grid-column: 1/3">
+        <a-input
+          v-model:value="form.title"
+          placeholder="Введите название задания"
+        />
       </a-form-item>
-      <a-form-item label="Description" name="about" class="long-form-item">
+      <a-form-item label="Описание" name="description" class="long-form-item">
         <a-textarea
+          v-model:value="form.description"
           rows="4"
-          placeholder="Describe the task"
+          placeholder="Опишите задание"
           :autosize="{ minRows: 4, maxRows: 6 }"
         />
       </a-form-item>
-      <a-form-item label="Title" name="title">
-        <a-date-picker style="width: 100%" placeholder="Start Date" />
+      <a-form-item label="Дата начала" name="startDate">
+        <a-date-picker
+          v-model:value="form.startDate"
+          style="width: 100%"
+          placeholder="Дата начала"
+          format="DD.MM.YYYY"
+        />
       </a-form-item>
-      <a-form-item label="Title" name="title">
-        <a-date-picker style="width: 100%" placeholder="End Date" />
+      <a-form-item label="Дата окончания" name="endDate">
+        <a-date-picker
+          v-model:value="form.endDate"
+          style="width: 100%"
+          placeholder="Дата окончания"
+          format="DD.MM.YYYY"
+        />
       </a-form-item>
     </a-form>
   </a-modal>
 
-  <a-modal
+  <!-- <a-modal
     v-model:visible="visible"
     title="Memorize 1200 words by tonight"
     @ok="handleOk"
@@ -267,7 +381,7 @@ const handleOk = (e) => {
         <a-button>Good</a-button>
       </div>
     </div>
-  </a-modal>
+  </a-modal> -->
 </template>
 
 <style scoped>
@@ -443,7 +557,7 @@ const handleOk = (e) => {
   line-height: 28px;
   margin-bottom: 16px;
 }
-.teacher__desc p {
+.teacher__desc :deep(p) {
   font-weight: 400;
   font-size: 16px;
   line-height: 24px;
@@ -499,6 +613,10 @@ const handleOk = (e) => {
   background: #ffffff;
   border-radius: 16px;
   padding: 24px;
+  height: 336px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .student__item-status {
   font-weight: 500;
@@ -526,11 +644,14 @@ const handleOk = (e) => {
   font-weight: 400;
   font-size: 14px;
   line-height: 20px;
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .student__task-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;

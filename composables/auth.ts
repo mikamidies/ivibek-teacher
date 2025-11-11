@@ -51,12 +51,10 @@ let refreshPromise: Promise<boolean> | null = null;
 let isFetchingUser = false;
 
 export const useAuth = () => {
-  // Сохраняем данные пользователя в cookie для персистентности
   const userDataCookie = useCookie<User | null>("user_data", {
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  // Инициализируем user из cookie если есть
   const user = useState<User | null>(
     "user",
     () => userDataCookie.value || null
@@ -75,7 +73,7 @@ export const useAuth = () => {
     accessToken.value = null;
     refreshToken.value = null;
     user.value = null;
-    userDataCookie.value = null; // Очищаем cookie
+    userDataCookie.value = null;
     refreshPromise = null;
 
     if (import.meta.client) {
@@ -102,7 +100,7 @@ export const useAuth = () => {
 
       if (data.user) {
         user.value = data.user;
-        userDataCookie.value = data.user; // Сохраняем в cookie
+        userDataCookie.value = data.user;
       } else {
         await fetchUser();
       }
@@ -111,7 +109,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Неверный логин или пароль",
+        error: error.data?.message || "Wrong username or password",
       };
     }
   };
@@ -143,7 +141,7 @@ export const useAuth = () => {
 
       if (data.user) {
         user.value = data.user;
-        userDataCookie.value = data.user; // Сохраняем в cookie
+        userDataCookie.value = data.user;
       } else {
         await fetchUser();
       }
@@ -152,29 +150,24 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка регистрации",
+        error: error.data?.message || "Registration error",
       };
     }
   };
 
   const refresh = async (): Promise<boolean> => {
-    // Защита от множественных одновременных вызовов refresh
     if (refreshPromise) {
-      console.log("🔄 Refresh already in progress, waiting...");
       return refreshPromise;
     }
 
     if (!refreshToken.value) {
-      console.log("❌ No refresh token available");
       return false;
     }
-
-    console.log("🔄 Refreshing tokens...");
 
     refreshPromise = (async () => {
       try {
         const data: AuthResponse = await $fetch(
-          `${API_BASE}/api/v1/mentor/auth/refresh`,
+          `${API_BASE}/api/v1/common/auth/refresh`,
           {
             method: "POST",
             body: { refreshToken: refreshToken.value },
@@ -184,18 +177,13 @@ export const useAuth = () => {
         accessToken.value = data.accessToken;
         refreshToken.value = data.refreshToken;
 
-        // Если API вернул данные пользователя - используем их
         if (data.user) {
           user.value = data.user;
-          userDataCookie.value = data.user; // Сохраняем в cookie
-          console.log("✅ User data received in refresh response");
-          console.log("🖼️ User image from refresh:", data.user.image);
+          userDataCookie.value = data.user;
         }
 
-        console.log("✅ Tokens refreshed successfully");
         return true;
       } catch (error) {
-        console.error("❌ Error refreshing tokens:", error);
         logout();
         return false;
       } finally {
@@ -207,25 +195,17 @@ export const useAuth = () => {
   };
 
   const fetchUser = async () => {
-    // Защита от множественных одновременных вызовов
     if (isFetchingUser) {
-      console.log("⏳ fetchUser already in progress, skipping...");
       return;
     }
-
-    console.log("📥 Fetching user profile...");
 
     if (!accessToken.value) {
-      console.log("❌ No access token available for fetchUser");
       return;
     }
 
-    // Проверяем истёк ли токен ПЕРЕД запросом
     if (isTokenExpired(accessToken.value)) {
-      console.log("⏰ Access token expired, refreshing before fetch...");
       const refreshed = await refresh();
       if (!refreshed || !accessToken.value) {
-        console.log("❌ Failed to refresh token in fetchUser");
         return;
       }
     }
@@ -241,22 +221,13 @@ export const useAuth = () => {
       });
 
       user.value = data as User;
-      userDataCookie.value = data as User; // Сохраняем в cookie
-      console.log("✅ User profile loaded:", user.value?.info?.fullName);
-      console.log("🖼️ User image RAW:", user.value?.image);
-      console.log("🖼️ Full user object:", JSON.stringify(user.value, null, 2));
+      userDataCookie.value = data as User;
     } catch (error: any) {
-      console.error("❌ Failed to fetch user:", error);
-
-      // Только если это 401, пытаемся обновить токен ОДИН РАЗ
       if (error.statusCode === 401 || error.status === 401) {
-        console.log("🔒 Got 401 in fetchUser, attempting token refresh...");
         const refreshed = await refresh();
         if (!refreshed) {
-          console.log("❌ Token refresh failed, logging out");
           logout();
         }
-        // НЕ повторяем запрос здесь - refresh уже установил user.value если API вернул данные
       }
     } finally {
       isFetchingUser = false;
@@ -275,7 +246,7 @@ export const useAuth = () => {
     majorId?: number | null;
   }) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
 
     try {
@@ -295,14 +266,14 @@ export const useAuth = () => {
       console.error("Composable error:", error);
       return {
         success: false,
-        error: error.data?.message || "Ошибка обновления профиля",
+        error: error.data?.message || "Profile update error",
       };
     }
   };
 
   const updateProfileImage = async (imageFile: File) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
 
     try {
@@ -319,17 +290,12 @@ export const useAuth = () => {
       }
 
       const uploadResponse = await response.json();
-      console.log("📤 Upload response:", uploadResponse);
 
-      // API возвращает shouldUrl с полным путём к изображению
       const imagePath = uploadResponse.shouldUrl || uploadResponse.filePath;
-      console.log("📁 Image path from response:", imagePath);
 
       if (!imagePath) {
-        throw new Error("Не удалось получить путь к изображению");
+        throw new Error("Failed to get image path");
       }
-
-      console.log("🔄 Updating profile with image path:", imagePath);
 
       await $fetch(`${API_BASE}/api/v1/mentor/profile/updateImage`, {
         method: "PATCH",
@@ -349,14 +315,14 @@ export const useAuth = () => {
       console.error("Image upload error:", error);
       return {
         success: false,
-        error: error.message || "Ошибка загрузки фото",
+        error: error.message || "Photo upload error",
       };
     }
   };
 
   const updateAbout = async (about: string) => {
     if (!accessToken.value) {
-      return { success: false, error: "Не авторизован" };
+      return { success: false, error: "Unauthorized" };
     }
 
     try {
@@ -375,7 +341,7 @@ export const useAuth = () => {
     } catch (error: any) {
       return {
         success: false,
-        error: error.data?.message || "Ошибка обновления описания",
+        error: error.data?.message || "About update error",
       };
     }
   };
@@ -396,8 +362,7 @@ export const useAuth = () => {
       return {
         success: false,
         error:
-          error.data?.message ||
-          "Ошибка сброса пароля. Проверьте имя пользователя",
+          error.data?.message || "Password reset error. Check the username",
       };
     }
   };

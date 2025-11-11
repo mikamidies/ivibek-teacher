@@ -1,5 +1,28 @@
 <script setup>
 import PageBanner from "@/components/PageBanner.vue";
+
+const { fetchStudents } = useStudents();
+
+const searchQuery = ref("");
+const students = ref([]);
+
+onMounted(async () => {
+  students.value = await fetchStudents();
+});
+
+const debouncedSearch = ref(searchQuery.value);
+let searchTimeout;
+
+watch(searchQuery, (newValue) => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    debouncedSearch.value = newValue;
+  }, 500);
+});
+
+watch(debouncedSearch, async () => {
+  students.value = await fetchStudents(debouncedSearch.value);
+});
 </script>
 
 <template>
@@ -11,112 +34,67 @@ import PageBanner from "@/components/PageBanner.vue";
     />
     <div class="teachers__body">
       <div class="teachers__top">
-        <div class="teachers__top-left">
-          <a-select placeholder="Choose university">
-            <a-select-option value="1">All Teachers</a-select-option>
-            <a-select-option value="2">My Teachers</a-select-option>
+        <!-- <div class="teachers__top-left light__borders">
+          <a-select
+            v-model:value="selectedUniversity"
+            placeholder="Choose university"
+          >
+            <a-select-option :value="null">All Universities</a-select-option>
+            <a-select-option
+              v-for="university in universities"
+              :key="university.id"
+              :value="university.id"
+            >
+              {{ university.name }}
+            </a-select-option>
           </a-select>
-          <a-select placeholder="Choose faculty">
-            <a-select-option value="1">All Subjects</a-select-option>
-            <a-select-option value="2">My Subjects</a-select-option>
+          <a-select
+            v-model:value="selectedFaculty"
+            placeholder="Choose faculty"
+          >
+            <a-select-option :value="null">All Faculties</a-select-option>
+            <a-select-option
+              v-for="faculty in faculties"
+              :key="faculty.id"
+              :value="faculty.id"
+            >
+              {{ faculty.name }}
+            </a-select-option>
           </a-select>
-        </div>
+        </div> -->
         <div class="teachers__top-right">
-          <a-input placeholder="Search" class="search__input" />
+          <a-input
+            v-model:value="searchQuery"
+            placeholder="Search"
+            class="search__input"
+          />
           <Icon name="lucide:search" style="width: 16px; height: 16px" />
         </div>
       </div>
       <div class="teachers__items">
-        <div class="teachers__item">
-          <NuxtLink to="/students/id">
+        <div class="teachers__item" v-for="item in students" :key="item.id">
+          <NuxtLink :to="`/students/${item.id}`">
             <div class="teachers__item-top">
               <div class="teachers__item-img">
                 <img
-                  src="/images/person.jpg"
-                  alt="Teacher"
+                  :src="item.image || '/images/default-person.jpg'"
+                  alt="Student"
                   width="56"
                   height="56"
                 />
               </div>
               <div class="teachers__item-info">
-                <h5 class="teachers__item-name">Yu Jimin</h5>
-                <span class="teachers__item-sub"> Computer Science </span>
+                <h5 class="teachers__item-name">{{ item.fullName }}</h5>
+                <span class="teachers__item-sub">
+                  {{ item?.email || "Email not set" }}
+                </span>
               </div>
             </div>
-            <div class="teachers__item-bottom">
+            <!-- <div class="teachers__item-bottom">
               <p class="teachers__item-status">
-                Software Engineering Specialist
+                {{ item.faculty?.name || "Faculty not set" }}
               </p>
-            </div>
-          </NuxtLink>
-        </div>
-        <div class="teachers__item">
-          <NuxtLink to="/students/id">
-            <div class="teachers__item-top">
-              <div class="teachers__item-img">
-                <img
-                  src="/images/person.jpg"
-                  alt="Teacher"
-                  width="56"
-                  height="56"
-                />
-              </div>
-              <div class="teachers__item-info">
-                <h5 class="teachers__item-name">Yu Jimin</h5>
-                <span class="teachers__item-sub"> Computer Science </span>
-              </div>
-            </div>
-            <div class="teachers__item-bottom">
-              <p class="teachers__item-status">
-                Software Engineering Specialist
-              </p>
-            </div>
-          </NuxtLink>
-        </div>
-        <div class="teachers__item">
-          <NuxtLink to="/students/id">
-            <div class="teachers__item-top">
-              <div class="teachers__item-img">
-                <img
-                  src="/images/person.jpg"
-                  alt="Teacher"
-                  width="56"
-                  height="56"
-                />
-              </div>
-              <div class="teachers__item-info">
-                <h5 class="teachers__item-name">Yu Jimin</h5>
-                <span class="teachers__item-sub"> Computer Science </span>
-              </div>
-            </div>
-            <div class="teachers__item-bottom">
-              <p class="teachers__item-status">
-                Software Engineering Specialist
-              </p>
-            </div>
-          </NuxtLink>
-        </div>
-        <div class="teachers__item">
-          <NuxtLink to="/students/id">
-            <div class="teachers__item-top">
-              <div class="teachers__item-img">
-                <img
-                  src="/images/person.jpg"
-                  alt="Teacher"
-                  width="56"
-                  height="56"
-                />
-              </div>
-              <div class="teachers__item-info">
-                <h5 class="teachers__item-name">Yu Jimin</h5>
-                <span class="teachers__item-sub"> Computer Science </span>
-              </div>
-            </div>
-            <div class="teachers__item-bottom">
-              <p class="teachers__item-status">
-                Software Engineering Specialist
-              </p>
-            </div>
+            </div> -->
           </NuxtLink>
         </div>
       </div>
@@ -150,7 +128,7 @@ import PageBanner from "@/components/PageBanner.vue";
 }
 .teachers__top-right {
   position: relative;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-darker);
   border-radius: 8px;
   padding: 0;
 }
@@ -183,7 +161,7 @@ import PageBanner from "@/components/PageBanner.vue";
   gap: 20px;
 }
 .teachers__item {
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-darker);
   border-radius: 16px;
   padding: 24px;
 }
@@ -191,7 +169,6 @@ import PageBanner from "@/components/PageBanner.vue";
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  margin-bottom: 16px;
 }
 .teachers__item-img {
   width: 56px;
