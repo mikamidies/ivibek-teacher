@@ -22,12 +22,10 @@ const majorId = ref(null);
 const agree = ref(false);
 const loading = ref(false);
 
-// Локальные данные для селектов
 const countries = ref([]);
 const universities = ref([]);
 const faculties = ref([]);
 
-// Загружаем справочники при монтировании
 onMounted(async () => {
   countries.value = await fetchCountries();
   universities.value = await fetchUniversities();
@@ -43,22 +41,22 @@ const handleRegister = async () => {
     !confirmPassword.value ||
     !dateOfBirth.value
   ) {
-    message.error("Заполните все поля");
+    message.error("Please fill in all fields");
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    message.error("Пароли не совпадают");
+    message.error("Passwords do not match");
     return;
   }
 
   if (password.value.length < 6) {
-    message.error("Пароль должен быть не менее 6 символов");
+    message.error("Password must be at least 6 characters long");
     return;
   }
 
   if (!agree.value) {
-    message.error("Примите условия использования");
+    message.error("Please accept the terms of use");
     return;
   }
 
@@ -81,7 +79,7 @@ const handleRegister = async () => {
   loading.value = false;
 
   if (result.success) {
-    message.success("Регистрация успешна!");
+    message.success("Registration successful!");
     navigateTo("/");
   } else {
     message.error(result.error);
@@ -93,7 +91,7 @@ const handleRegister = async () => {
   <div class="login-page auth">
     <div class="login__wrapper">
       <div class="login__img">
-        <NuxtImg
+        <img
           src="/images/login.svg"
           alt="Register Illustration"
           width="500"
@@ -103,7 +101,7 @@ const handleRegister = async () => {
       </div>
       <div class="login__body">
         <div class="login__logo">
-          <NuxtImg src="/images/brand.svg" alt="Logo" width="120" height="40" />
+          <img src="/images/brand.svg" alt="Logo" width="120" height="40" />
         </div>
         <div class="login__somewhat">
           <div class="login__header">

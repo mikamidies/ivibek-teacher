@@ -6,7 +6,7 @@ definePageMeta({
 import { message } from "ant-design-vue";
 import dayjs from "dayjs";
 
-const { user, updateProfileImage, updateAbout, accessToken, fetchUser } =
+const { user, updateProfile, updateProfileImage, updateAbout, fetchUser } =
   useAuth();
 
 const { fetchCountries, fetchUniversities, fetchFaculties } = useCommon();
@@ -79,39 +79,32 @@ const showModal = async () => {
 const handleOk = async () => {
   loading.value = true;
 
-  try {
-    const body = {
-      fullName: form.value.fullName,
-      email: form.value.email,
-      dateOfBirth: form.value.dateOfBirth
-        ? dayjs(form.value.dateOfBirth).format("YYYY-MM-DD")
-        : undefined,
-      gender: form.value.gender,
-      countryId: form.value.countryId,
-      timezone: form.value.timezone,
-      meetingHourPrice: form.value.meetingHourPrice,
-      universityId: form.value.universityId,
-      majorId: form.value.majorId,
-    };
+  const body = {
+    fullName: form.value.fullName,
+    email: form.value.email,
+    dateOfBirth: form.value.dateOfBirth
+      ? dayjs(form.value.dateOfBirth).format("YYYY-MM-DD")
+      : undefined,
+    gender: form.value.gender,
+    countryId: form.value.countryId,
+    timezone: form.value.timezone,
+    meetingHourPrice: form.value.meetingHourPrice,
+    universityId: form.value.universityId,
+    majorId: form.value.majorId,
+  };
 
-    await $fetch(`https://api.ivybek.com/api/v1/mentor/profile`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${accessToken.value}`,
-        "Content-Type": "application/json",
-      },
-      body,
-    });
-
-    await fetchUser();
-    message.success("Профиль обновлен!");
-    visible.value = false;
-  } catch (error) {
-    console.error(error);
-    message.error("Ошибка обновления профиля");
-  }
+  console.log("📤 Sending profile update:", body);
+  const result = await updateProfile(body);
+  console.log("📥 Update result:", result);
 
   loading.value = false;
+
+  if (result.success) {
+    message.success("Profile updated!");
+    visible.value = false;
+  } else {
+    message.error(result.error || "Error updating profile");
+  }
 };
 
 const handleCancel = () => {
@@ -128,10 +121,10 @@ const handleOkDesc = async () => {
   loading.value = false;
 
   if (result.success) {
-    message.success("Описание обновлено!");
+    message.success("Description updated!");
     visibleDesc.value = false;
   } else {
-    message.error(result.error || "Ошибка обновления");
+    message.error(result.error || "Error updating description");
   }
 };
 
@@ -142,7 +135,7 @@ const customRequest = async ({ file, onSuccess, onError }) => {
 
   if (result.success) {
     onSuccess("ok");
-    message.success("Фото профиля обновлено!");
+    message.success("Profile photo updated!");
   } else {
     onError(new Error(result.error));
     message.error(result.error);
@@ -151,10 +144,10 @@ const customRequest = async ({ file, onSuccess, onError }) => {
 
 const beforeUpload = (file) => {
   const isImage = file.type.startsWith("image/");
-  if (!isImage) message.error("Можно загружать только изображения!");
+  if (!isImage) message.error("Only images are allowed!");
 
   const isLt5M = file.size / 1024 / 1024 < 5;
-  if (!isLt5M) message.error("Изображение должно быть меньше 5MB!");
+  if (!isLt5M) message.error("Image must be smaller than 5MB!");
 
   return isImage && isLt5M;
 };
@@ -179,8 +172,8 @@ const timezones = [
     <div class="profile__top">
       <div class="profile__top-left">
         <div class="profile__img">
-          <NuxtImg
-            :src="user.image || '/images/default-person.jpg'"
+          <img
+            :src="user?.image || '/images/default-person.jpg'"
             alt="person"
             width="80"
             height="80"
@@ -259,12 +252,12 @@ const timezones = [
               {{ user.info?.country?.name || "Not set" }}
             </p>
           </div>
-          <div class="profile__item">
+          <!-- <div class="profile__item">
             <Icon name="lucide:clock" />
             <p class="profile__item-text">
               {{ user.info?.timezone || "Not set" }}
             </p>
-          </div>
+          </div> -->
           <div class="profile__item" v-if="user.info?.university">
             <Icon name="lucide:graduation-cap" />
             <p class="profile__item-text">

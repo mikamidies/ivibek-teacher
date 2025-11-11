@@ -104,7 +104,7 @@ definePageMeta({ layoutTitle: "Students" });
 - User state managed via `useState<User | null>("user")` for SSR compatibility
 - Client-only plugins suffix: `.client.ts` (auth, antdv, token refresh)
 - Icons via `nuxt-icon` package: `<Icon name="lucide:icon-name" />`
-- Images via `@nuxt/image`: `<NuxtImg src="/images/file.jpg" />` (auto WebP conversion)
+- Images via `@nuxt/image`: `<img src="/images/file.jpg" />` (auto WebP conversion)
 
 ## Project-Specific Decisions
 

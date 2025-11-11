@@ -68,8 +68,6 @@ const truncateText = (text, maxLength = 60) => {
   if (!text) return "-";
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
-
-console.log(essays);
 </script>
 
 <template>

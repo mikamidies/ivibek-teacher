@@ -12,7 +12,7 @@ const { user } = useAuth();
     </div>
     <div class="info">
       <div class="person">
-        <NuxtImg
+        <img
           :src="user?.image || '/images/default-person.jpg'"
           alt="person"
           width="80"
@@ -27,23 +27,20 @@ const { user } = useAuth();
       </div>
       <div class="items">
         <div class="item">
-          <p class="answer">Application Year</p>
-          <h4 class="value">2023</h4>
+          <p class="answer">Country</p>
+          <h4 class="value">{{ user?.info?.country.name || "N/A" }}</h4>
         </div>
         <div class="item">
-          <p class="answer">Target Countries</p>
-          <h4 class="value">United States</h4>
+          <p class="answer">University</p>
+          <h4 class="value">{{ user?.info?.university.name || "N/A" }}</h4>
         </div>
         <div class="item">
-          <p class="answer">Intended Majors</p>
-          <h4 class="value">Business Administration</h4>
-        </div>
-        <div class="item">
-          <p class="answer">Hook Statement</p>
-          <h4 class="value">NaN</h4>
+          <p class="answer">Faculty</p>
+          <h4 class="value">{{ user?.info?.faculty.name || "N/A" }}</h4>
         </div>
       </div>
     </div>
+
     <div class="cards">
       <div class="card">
         <p class="card__name">Essays</p>

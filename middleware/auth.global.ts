@@ -9,23 +9,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
     return;
   }
 
-  // Проверяем наличие токена
   if (!accessToken.value) {
     return navigateTo("/auth/login");
   }
 
-  // Проверяем истёк ли токен
   if (isTokenExpired(accessToken.value)) {
-    console.log("🔒 Token expired in middleware, attempting refresh...");
-
-    // Пытаемся обновить токен
     const refreshed = await refresh();
 
     if (!refreshed) {
-      console.log("❌ Failed to refresh token in middleware");
       return navigateTo("/auth/login");
     }
-
-    console.log("✅ Token refreshed successfully in middleware");
   }
 });

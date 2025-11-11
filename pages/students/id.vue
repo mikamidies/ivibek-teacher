@@ -13,7 +13,7 @@ const handleOk = (e) => {
 <template>
   <div class="teacher-page">
     <div class="teacher__top teacher__card">
-      <NuxtImg src="/images/bacteria-blue.png" alt="Banner" class="bacteria" />
+      <img src="/images/bacteria-blue.png" alt="Banner" class="bacteria" />
       <div class="teacher__top-top">
         <NuxtLink to="/students" class="teacher__top-back">
           <Icon name="lucide:arrow-left" class="icon" />
@@ -23,7 +23,7 @@ const handleOk = (e) => {
       <div class="teacher__top-flexer">
         <div class="teacher__top-left">
           <div class="teacher__top-img">
-            <NuxtImg
+            <img
               src="/images/person.jpg"
               alt="Teacher"
               width="96"
@@ -60,41 +60,6 @@ const handleOk = (e) => {
     </div>
     <div class="teacher__grid" v-show="infoShow">
       <div class="teacher__left">
-        <div class="teacher__university teacher__card">
-          <div class="teacher__university-top">
-            <div class="teacher__university-logo">
-              <NuxtImg
-                src="/images/cumbridge.png"
-                alt="University Logo"
-                width="48"
-                height="48"
-              />
-            </div>
-            <div class="teacher__university-info">
-              <h5 class="teacher__university-name">University of Cambridge</h5>
-              <span class="teacher__university-sub"> United Kingdom </span>
-            </div>
-          </div>
-          <div class="teacher__university-bottom">
-            <div class="teacher__university-item">
-              <Icon name="lucide:book-open" class="icon" />
-              <p>Bachelor's Degree in Computer Science</p>
-            </div>
-            <div class="teacher__university-item">
-              <Icon name="lucide:book-open" class="icon" />
-              <p>Bachelor's Degree in Computer Science</p>
-            </div>
-            <div class="teacher__university-item">
-              <Icon name="lucide:book-open" class="icon" />
-              <p>Bachelor's Degree in Computer Science</p>
-            </div>
-            <div class="teacher__university-item">
-              <Icon name="lucide:book-open" class="icon" />
-              <p>Bachelor's Degree in Computer Science</p>
-            </div>
-          </div>
-        </div>
-
         <div class="teacher__general teacher__card">
           <div class="modal__details">
             <h4 class="section__title">Contact Information</h4>
@@ -330,7 +295,7 @@ const handleOk = (e) => {
   gap: 24px;
 }
 .teacher__top {
-  padding: 24px 40px;
+  padding: 24px 32px;
   position: relative;
 }
 .teacher__top a {

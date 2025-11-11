@@ -35,6 +35,11 @@ const sessions = [
 
 <template>
   <div class="booking-page">
+    <PageBanner
+      titleProps="Booking"
+      backgroundProps="#0092B8"
+      iconProps="/page-icons/booking.png"
+    />
     <div class="booking__grid">
       <div class="booking-left">
         <div class="sessions">
@@ -57,11 +62,7 @@ const sessions = [
                 <NuxtLink to="/">
                   <div class="sessions__item-top">
                     <div class="sessions__item-person">
-                      <NuxtImg
-                        :src="item.img"
-                        alt=""
-                        class="sessions__item-pic"
-                      />
+                      <img :src="item.img" alt="" class="sessions__item-pic" />
                       <p class="sessions__item-name">{{ item.name }}</p>
                     </div>
                     <p class="sessions__item-time">{{ item.time }}</p>
