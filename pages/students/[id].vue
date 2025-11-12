@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 const infoShow = ref(true);
 const tasksShow = ref(false);
 const visible = ref(false);
+const editVisible = ref(false);
 const loading = ref(true);
 const submitLoading = ref(false);
 const assignmentsLoading = ref(false);
@@ -29,7 +30,7 @@ const handleOk = async () => {
       !form.value.startDate ||
       !form.value.endDate
     ) {
-      message.error("Пожалуйста, заполните все поля");
+      message.error("Please fill in all fields");
       return;
     }
 
@@ -43,7 +44,7 @@ const handleOk = async () => {
 
     await assignTask(payload);
 
-    message.success("Задание успешно назначено");
+    message.success("Task assigned successfully");
 
     form.value = {
       title: "",
@@ -57,10 +58,14 @@ const handleOk = async () => {
     await loadAssignments();
   } catch (error) {
     console.error("Error assigning task:", error);
-    message.error("Ошибка при назначении задания");
+    message.error("Error assigning task");
   } finally {
     submitLoading.value = false;
   }
+};
+
+const handleEditOk = () => {
+  editVisible.value = false;
 };
 
 const { fetchStudentById, assignTask, fetchStudentAssignments } = useStudents();
@@ -85,21 +90,21 @@ const getStatusConfig = (status) => {
   switch (status) {
     case "COMPLETED":
       return {
-        class: "",
+        class: "green status",
         icon: "lucide:check",
-        text: "Выполнено",
+        text: "Completed",
       };
     case "ASSIGNED":
       return {
         class: "yellow status",
         icon: "lucide:clock",
-        text: "Назначено",
+        text: "Assigned",
       };
     case "PENDING":
       return {
-        class: "yellow status",
+        class: "blue status",
         icon: "lucide:clock",
-        text: "В ожидании",
+        text: "Pending",
       };
     default:
       return {
@@ -240,12 +245,20 @@ onMounted(async () => {
         class="student__task-item"
         v-for="item in assignments"
         :key="item.id"
+        @click="editVisible = true"
       >
         <div class="student__task-top">
-          <div class="student__item-status">
-            <Icon name="lucide:check" class="icon" />
-            {{ item?.status }}
-          </div>
+          <span
+            class="student__item-status"
+            :class="getStatusConfig(item.status).class"
+          >
+            <Icon
+              :name="getStatusConfig(item.status).icon"
+              class="icon"
+              aria-hidden="true"
+            />
+            <span>{{ getStatusConfig(item.status).text }}</span>
+          </span>
           <h4 class="student__task-name">{{ item?.title }}</h4>
           <p class="student__task-sub">
             {{ item?.description }}
@@ -267,50 +280,51 @@ onMounted(async () => {
 
   <a-modal
     v-model:visible="visible"
-    title="Назначить новое задание"
+    title="Assign New Task"
     @ok="handleOk"
     :confirm-loading="submitLoading"
-    ok-text="Назначить"
-    cancel-text="Отмена"
+    ok-text="Assign"
+    cancel-text="Cancel"
   >
     <a-form :model="form" layout="vertical">
-      <a-form-item label="Название" name="title" style="grid-column: 1/3">
-        <a-input
-          v-model:value="form.title"
-          placeholder="Введите название задания"
-        />
+      <a-form-item label="Title" name="title" style="grid-column: 1/3">
+        <a-input v-model:value="form.title" placeholder="Enter task title" />
       </a-form-item>
-      <a-form-item label="Описание" name="description" class="long-form-item">
+      <a-form-item
+        label="Description"
+        name="description"
+        class="long-form-item"
+      >
         <a-textarea
           v-model:value="form.description"
           rows="4"
-          placeholder="Опишите задание"
+          placeholder="Enter task description"
           :autosize="{ minRows: 4, maxRows: 6 }"
         />
       </a-form-item>
-      <a-form-item label="Дата начала" name="startDate">
+      <a-form-item label="Start Date" name="startDate">
         <a-date-picker
           v-model:value="form.startDate"
           style="width: 100%"
-          placeholder="Дата начала"
+          placeholder="Start Date"
           format="DD.MM.YYYY"
         />
       </a-form-item>
-      <a-form-item label="Дата окончания" name="endDate">
+      <a-form-item label="End Date" name="endDate">
         <a-date-picker
           v-model:value="form.endDate"
           style="width: 100%"
-          placeholder="Дата окончания"
+          placeholder="End Date"
           format="DD.MM.YYYY"
         />
       </a-form-item>
     </a-form>
   </a-modal>
 
-  <!-- <a-modal
-    v-model:visible="visible"
+  <a-modal
+    v-model:visible="editVisible"
     title="Memorize 1200 words by tonight"
-    @ok="handleOk"
+    @ok="handleEditOk"
   >
     <div class="status yellow big__status">
       <Icon name="lucide:clock" class="icon" />
@@ -381,7 +395,7 @@ onMounted(async () => {
         <a-button>Good</a-button>
       </div>
     </div>
-  </a-modal> -->
+  </a-modal>
 </template>
 
 <style scoped>
@@ -630,9 +644,6 @@ onMounted(async () => {
   padding: 4px 8px;
   border-radius: 8px;
   margin-bottom: 12px;
-}
-.student__item-status span {
-  font-size: 18px;
 }
 .student__task-name {
   font-weight: 600;
