@@ -49,6 +49,25 @@ interface Assignment {
   endDate: string;
 }
 
+interface AssignmentDetail {
+  id: number;
+  title: string;
+  description: string;
+  status: "ASSIGNED" | "PENDING_REVIEW" | "GRADED";
+  startDate: string;
+  endDate: string;
+  grade?: {
+    id: number;
+    grade: number;
+    createdAt: string;
+  } | null;
+  submission?: {
+    id: number;
+    submissionUrl: string;
+    createdAt: string;
+  } | null;
+}
+
 interface AssignmentsResponse {
   content: Assignment[];
   totalPages: number;
@@ -148,10 +167,59 @@ export const useStudents = () => {
     }
   };
 
+  const fetchAssignmentById = async (
+    assignmentId: number
+  ): Promise<AssignmentDetail | null> => {
+    try {
+      const token = useCookie("access_token");
+
+      const data = await $fetch<AssignmentDetail>(
+        `${API_BASE}/api/v1/mentor/assignments/${assignmentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+          },
+        }
+      );
+
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch assignment:", error);
+      return null;
+    }
+  };
+
+  const gradeAssignment = async (assignmentId: number, grade: number) => {
+    try {
+      const token = useCookie("access_token");
+
+      const data = await $fetch(
+        `${API_BASE}/api/v1/mentor/assignments/${assignmentId}/grade`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token.value}`,
+            "Content-Type": "application/json",
+          },
+          body: {
+            grade: grade,
+          },
+        }
+      );
+
+      return data;
+    } catch (error) {
+      console.error("Failed to grade assignment:", error);
+      throw error;
+    }
+  };
+
   return {
     fetchStudents,
     fetchStudentById,
     assignTask,
     fetchStudentAssignments,
+    fetchAssignmentById,
+    gradeAssignment,
   };
 };

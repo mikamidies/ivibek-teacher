@@ -3,6 +3,7 @@ import PageBanner from "@/components/PageBanner.vue";
 
 const { fetchStudents } = useStudents();
 
+const loading = ref(false);
 const searchQuery = ref("");
 const students = ref([]);
 
@@ -71,7 +72,16 @@ watch(debouncedSearch, async () => {
           <Icon name="lucide:search" style="width: 16px; height: 16px" />
         </div>
       </div>
-      <div class="teachers__items">
+      <div v-if="loading" class="essay__loading">
+        <a-spin size="large" />
+      </div>
+
+      <div v-else-if="!students.length" class="essay__empty">
+        <Icon name="lucide:file-text" class="empty-icon" />
+        <p>No students yet</p>
+      </div>
+
+      <div class="teachers__items" v-else>
         <div class="teachers__item" v-for="item in students" :key="item.id">
           <NuxtLink :to="`/students/${item.id}`">
             <div class="teachers__item-top">
@@ -201,5 +211,17 @@ watch(debouncedSearch, async () => {
   color: var(--green);
   padding: 4px 8px;
   border-radius: 8px;
+}
+.essay__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 16px;
+}
+.empty-icon {
+  font-size: 48px;
+  color: var(--light-grey);
 }
 </style>

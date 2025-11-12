@@ -1,13 +1,17 @@
 <script setup>
 import dayjs from "dayjs";
+import { message } from "ant-design-vue";
 
 const infoShow = ref(true);
 const tasksShow = ref(false);
 const visible = ref(false);
 const editVisible = ref(false);
+const gradeVisible = ref(false);
 const loading = ref(true);
 const submitLoading = ref(false);
 const assignmentsLoading = ref(false);
+const assignmentDetailLoading = ref(false);
+const gradeSubmitLoading = ref(false);
 
 const form = ref({
   title: "",
@@ -15,6 +19,12 @@ const form = ref({
   startDate: null,
   endDate: null,
 });
+
+const gradeForm = ref({
+  grade: null,
+});
+
+const selectedAssignment = ref(null);
 
 const showModal = () => {
   visible.value = true;
@@ -68,7 +78,70 @@ const handleEditOk = () => {
   editVisible.value = false;
 };
 
-const { fetchStudentById, assignTask, fetchStudentAssignments } = useStudents();
+const openAssignmentModal = async (assignmentId) => {
+  try {
+    assignmentDetailLoading.value = true;
+    gradeVisible.value = true;
+    selectedAssignment.value = await fetchAssignmentById(assignmentId);
+    gradeForm.value.grade = null;
+  } catch (error) {
+    console.error("Error loading assignment details:", error);
+    message.error("Failed to load assignment details");
+  } finally {
+    assignmentDetailLoading.value = false;
+  }
+};
+
+const handleGradeSubmit = async () => {
+  try {
+    if (
+      !gradeForm.value.grade ||
+      gradeForm.value.grade < 0 ||
+      gradeForm.value.grade > 100
+    ) {
+      message.error("Please enter a valid grade (0-100)");
+      return;
+    }
+
+    gradeSubmitLoading.value = true;
+
+    await gradeAssignment(selectedAssignment.value.id, gradeForm.value.grade);
+
+    message.success("Grade submitted successfully");
+
+    const updatedAssignment = await fetchAssignmentById(
+      selectedAssignment.value.id
+    );
+
+    console.log("Updated assignment:", updatedAssignment);
+    console.log("Has grade?", !!updatedAssignment?.grade);
+
+    selectedAssignment.value = { ...updatedAssignment };
+
+    await loadAssignments();
+
+    gradeForm.value.grade = null;
+
+    await nextTick();
+  } catch (error) {
+    console.error("Error submitting grade:", error);
+    message.error("Failed to submit grade");
+  } finally {
+    gradeSubmitLoading.value = false;
+  }
+};
+const handleGradeOk = () => {
+  gradeVisible.value = false;
+  selectedAssignment.value = null;
+};
+
+const {
+  fetchStudentById,
+  assignTask,
+  fetchStudentAssignments,
+  fetchAssignmentById,
+  gradeAssignment,
+} = useStudents();
 const route = useRoute();
 const studentId = Number(route.params.id);
 
@@ -88,11 +161,11 @@ const loadAssignments = async () => {
 
 const getStatusConfig = (status) => {
   switch (status) {
-    case "COMPLETED":
+    case "GRADED":
       return {
         class: "green status",
         icon: "lucide:check",
-        text: "Completed",
+        text: "Graded",
       };
     case "ASSIGNED":
       return {
@@ -100,7 +173,7 @@ const getStatusConfig = (status) => {
         icon: "lucide:clock",
         text: "Assigned",
       };
-    case "PENDING":
+    case "PENDING_REVIEW":
       return {
         class: "blue status",
         icon: "lucide:clock",
@@ -240,39 +313,40 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-    <div class="student__grid" v-show="tasksShow">
-      <div
-        class="student__task-item"
-        v-for="item in assignments"
-        :key="item.id"
-        @click="editVisible = true"
-      >
-        <div class="student__task-top">
-          <span
-            class="student__item-status"
-            :class="getStatusConfig(item.status).class"
-          >
-            <Icon
-              :name="getStatusConfig(item.status).icon"
-              class="icon"
-              aria-hidden="true"
-            />
-            <span>{{ getStatusConfig(item.status).text }}</span>
-          </span>
-          <h4 class="student__task-name">{{ item?.title }}</h4>
-          <p class="student__task-sub">
-            {{ item?.description }}
-          </p>
-        </div>
-        <div class="student__task-bottom">
-          <p class="student__task-from">
-            <Icon name="lucide:calendar" class="icon" />
-            {{ item?.startDate }}
-          </p>
-          <p class="student__task-to">
-            <Icon name="lucide:calendar" class="icon" />
-            {{ item?.endDate }}
-          </p>
+    <div class="student__tasks" v-show="tasksShow">
+      <div class="empty" v-if="assignments.length === 0">
+        <Icon name="lucide:book-template" />
+        <p>No tasks assigned to this student yet</p>
+      </div>
+      <div class="student__grid">
+        <div
+          class="student__task-item"
+          v-for="item in assignments"
+          :key="item.id"
+          @click="openAssignmentModal(item.id)"
+        >
+          <div class="student__task-top">
+            <span
+              class="student__item-status"
+              :class="getStatusConfig(item.status).class"
+            >
+              <span>{{ getStatusConfig(item.status).text }}</span>
+            </span>
+            <h4 class="student__task-name">{{ item?.title }}</h4>
+            <p class="student__task-sub">
+              {{ item?.description }}
+            </p>
+          </div>
+          <div class="student__task-bottom">
+            <p class="student__task-from">
+              <Icon name="lucide:calendar" class="icon" />
+              {{ item?.startDate }}
+            </p>
+            <p class="student__task-to">
+              <Icon name="lucide:calendar" class="icon" />
+              {{ item?.endDate }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -321,7 +395,7 @@ onMounted(async () => {
     </a-form>
   </a-modal>
 
-  <a-modal
+  <!-- <a-modal
     v-model:visible="editVisible"
     title="Memorize 1200 words by tonight"
     @ok="handleEditOk"
@@ -352,47 +426,116 @@ onMounted(async () => {
         kerak
       </p>
     </div>
-  </a-modal>
+  </a-modal> -->
 
   <a-modal
-    v-model:visible="visible"
-    title="Memorize 1200 words by tonight"
-    @ok="handleOk"
+    v-model:visible="gradeVisible"
+    :title="selectedAssignment?.title || 'Assignment Details'"
+    @ok="handleGradeOk"
+    width="600px"
+    :key="selectedAssignment?.id"
   >
-    <div class="status big__status">
-      <Icon name="lucide:check" class="icon" />
-      Done
+    <div
+      v-if="assignmentDetailLoading"
+      style="text-align: center; padding: 48px"
+    >
+      <a-spin size="large" />
+      <p style="margin-top: 16px">Loading assignment details...</p>
     </div>
-
-    <div class="modal__times">
-      <div class="modal__start">
-        <p>Start Date</p>
-        <span>22.05.2025</span>
+    <div v-else-if="selectedAssignment">
+      <div
+        class="status big__status"
+        :class="getStatusConfig(selectedAssignment.status).class"
+      >
+        {{ getStatusConfig(selectedAssignment.status).text }}
       </div>
-      <div class="modal__end">
-        <p>End Date</p>
-        <span>25.05.2025</span>
+
+      <div class="modal__times">
+        <div class="modal__start">
+          <p>Start Date</p>
+          <span>{{
+            dayjs(selectedAssignment.startDate).format("DD.MM.YYYY")
+          }}</span>
+        </div>
+        <div class="modal__end">
+          <p>End Date</p>
+          <span>{{
+            dayjs(selectedAssignment.endDate).format("DD.MM.YYYY")
+          }}</span>
+        </div>
       </div>
-    </div>
 
-    <div class="modal__desc">
-      <h4>Task Description</h4>
-      <p>
-        Agar 1200 ta so‘zni bir kunda yodlashni nazarda tutsang, bu juda katta
-        yuklama bo‘ladi. Odatda inson bir kunda samarali tarzda 50–100 ta so‘zni
-        yodlashi mumkin (mantiqan foydalanish bilan). Shuning uchun 1200 ta so‘z
-        bir kunda emas, balki qismlarga bo‘lib, samarali metodlarda yodlash
-        kerak
-      </p>
-    </div>
+      <div class="modal__desc">
+        <h4>Task Description</h4>
+        <p>{{ selectedAssignment.description }}</p>
+      </div>
 
-    <div class="modal__bottom">
-      <h4>Student’s answer</h4>
-      <a href="#">https://miro.com/app/board/uXjVJYESWh4=/</a>
-      <div class="modal__buttons">
-        <a-button>Bad</a-button>
-        <a-button>Normal</a-button>
-        <a-button>Good</a-button>
+      <div
+        class="modal__bottom"
+        v-if="selectedAssignment.submission || selectedAssignment.grade"
+      >
+        <div class="modal__response" v-if="selectedAssignment.submission">
+          <h4>Student's answer</h4>
+          <a
+            :href="selectedAssignment.submission.submissionUrl"
+            target="_blank"
+          >
+            {{ selectedAssignment.submission.submissionUrl }}
+          </a>
+          <!-- <p style="color: var(--light-grey); font-size: 12px; margin-top: 8px">
+            Submitted:
+            {{
+              dayjs(selectedAssignment.submission.createdAt).format(
+                "DD.MM.YYYY HH:mm"
+              )
+            }}
+          </p> -->
+        </div>
+
+        <div class="modal__grade" v-if="selectedAssignment.grade">
+          <p style="font-size: 24px; font-weight: 600; color: var(--green)">
+            {{ selectedAssignment.grade.grade }}/100
+          </p>
+          <!-- <p style="color: var(--light-grey); font-size: 12px; margin-top: 8px">
+            Graded:
+            {{
+              dayjs(selectedAssignment.grade.createdAt).format(
+                "DD.MM.YYYY HH:mm"
+              )
+            }}
+          </p> -->
+        </div>
+
+        <div
+          class="modal__grade"
+          v-if="selectedAssignment.submission && !selectedAssignment.grade"
+        >
+          <h4>Submit Grade</h4>
+          <form @submit.prevent="handleGradeSubmit">
+            <a-input
+              v-model:value="gradeForm.grade"
+              type="number"
+              placeholder="Enter grade (0-100)"
+              :min="0"
+              :max="100"
+            />
+            <a-button
+              type="primary"
+              html-type="submit"
+              style="width: 100%"
+              :loading="gradeSubmitLoading"
+            >
+              Submit
+            </a-button>
+          </form>
+        </div>
+      </div>
+
+      <div
+        v-else
+        style="text-align: center; padding: 24px; color: var(--light-grey)"
+      >
+        <p>Waiting for student submission</p>
       </div>
     </div>
   </a-modal>
@@ -763,5 +906,27 @@ onMounted(async () => {
 }
 .modal__buttons button:last-child {
   border-radius: 0 8px 8px 0;
+}
+.modal__grade form {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  gap: 8px;
+}
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--light-grey);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  margin-top: 48px;
+  min-height: 300px;
+}
+.empty span {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
 }
 </style>
