@@ -187,6 +187,11 @@ watch(debouncedSearch, async () => {
   overflow: hidden;
   flex-shrink: 0;
 }
+.teachers__item-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 .teachers__item-info {
   flex-grow: 1;
 }

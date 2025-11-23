@@ -5,6 +5,7 @@ definePageMeta({
 
 import { message } from "ant-design-vue";
 import dayjs from "dayjs";
+import WeeklyCalendar from "@/components/booking/WeeklyCalendar.vue";
 
 const { user, updateProfile, updateProfileImage, updateAbout, fetchUser } =
   useAuth();
@@ -271,15 +272,22 @@ const timezones = [
         </div>
       </div>
 
-      <div class="profile__about">
-        <div class="profile__about-head">
-          <h4 class="section__title">About Me</h4>
-          <button class="profile__about-edit" @click="showModalDesc">
-            <Icon name="lucide:pencil" />
-          </button>
+      <div>
+        <div class="profile__about">
+          <div class="profile__about-head">
+            <h4 class="section__title">About Me</h4>
+            <button class="profile__about-edit" @click="showModalDesc">
+              <Icon name="lucide:pencil" />
+            </button>
+          </div>
+          <div class="profile__about-text">
+            {{ user?.about || "No description yet" }}
+          </div>
         </div>
-        <div class="profile__about-text">
-          {{ user?.about || "No description yet" }}
+
+        <div class="profile__about" style="margin-top: 24px">
+          <h4 class="section__title">Calendar</h4>
+          <WeeklyCalendar />
         </div>
       </div>
     </div>
@@ -452,7 +460,7 @@ const timezones = [
   text-align: left !important;
 }
 .profile-page {
-  padding: 24px;
+  padding: 24px 24px 120px 24px;
   background: var(--border);
   height: 100vh;
   overflow: auto;
