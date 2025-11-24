@@ -6,36 +6,7 @@ const handleDayClick = (day) => {
   console.log("Выбран день:", day);
 };
 
-const sessions = [
-  {
-    date: "Aug 19",
-    items: [
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting Hannibal Lectus",
-        img: "/images/person.jpg",
-      },
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting",
-        img: "/images/person.jpg",
-      },
-    ],
-  },
-  {
-    date: "Aug 20",
-    items: [
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting",
-        img: "/images/person.jpg",
-      },
-    ],
-  },
-];
+const sessions = [];
 </script>
 
 <template>
@@ -50,10 +21,14 @@ const sessions = [
         <div class="sessions">
           <div class="sessions__head">
             <p class="sessions__title">Upcoming sessions</p>
-            <NuxtLink to="/">View</NuxtLink>
           </div>
           <div class="sessions__items">
+            <div class="empty" v-if="sessions.length === 0">
+              <Icon name="lucide:file-text" class="empty-icon" />
+              <p>No upcoming sessions.</p>
+            </div>
             <div
+              v-else
               class="sessions__by-date"
               v-for="(session, index) in sessions"
               :key="index"
@@ -81,7 +56,7 @@ const sessions = [
           </div>
         </div>
         <div class="booking__calendar">
-          <p class="sessions__title">Календарь</p>
+          <p class="sessions__title">Calendar</p>
           <MonthlyCalendar @day-click="handleDayClick" />
         </div>
       </div>
@@ -91,6 +66,18 @@ const sessions = [
 </template>
 
 <style scoped>
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: var(--light-grey);
+}
+.empty-icon {
+  font-size: 36px;
+}
 .booking-page {
   padding: 24px 24px 120px 24px;
   background: var(--border);

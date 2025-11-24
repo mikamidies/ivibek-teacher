@@ -16,13 +16,14 @@ const emit = defineEmits<{
   (e: "dayClick", day: DayInfo): void;
 }>();
 
-const { assignTimeSlots } = useTimeSlots();
+const { assignTimeSlots, fetchTimeSlotsByDate } = useTimeSlots();
 
 const currentDate = ref<Date>(getToday());
 const modalVisible = ref(false);
 const selectedDay = ref<DayInfo | null>(null);
 const selectedHours = ref<Set<number>>(new Set());
 const loading = ref(false);
+const assignedTimeSlots = ref<{ [date: string]: string[] }>({});
 
 const availableHours = Array.from({ length: 13 }, (_, i) => i + 10);
 
@@ -43,13 +44,16 @@ const goToToday = () => {
   currentDate.value = getToday();
 };
 
-const handleDayClick = (day: DayInfo) => {
+const handleDayClick = async (day: DayInfo) => {
   if (isPastDay(day.dateString)) {
     return;
   }
   selectedDay.value = day;
   selectedHours.value.clear();
   modalVisible.value = true;
+
+  assignedTimeSlots.value = await fetchTimeSlotsByDate(day.dateString);
+
   emit("dayClick", day);
 };
 
@@ -61,6 +65,8 @@ const closeModal = () => {
 };
 
 const toggleHour = (hour: number) => {
+  if (isHourDisabled(hour)) return;
+
   if (selectedHours.value.has(hour)) {
     selectedHours.value.delete(hour);
   } else {
@@ -72,9 +78,24 @@ const isHourSelected = (hour: number) => {
   return selectedHours.value.has(hour);
 };
 
+const isHourDisabled = (hour: number) => {
+  if (!selectedDay.value) return false;
+  const dateKey = selectedDay.value.dateString;
+  const assignedHours = assignedTimeSlots.value[dateKey] || [];
+
+  // Форматируем час с ведущим нулем если нужно (10 -> "10", 9 -> "09")
+  const formattedHour = hour.toString().padStart(2, "0");
+
+  return assignedHours.some((time: string) => {
+    // Извлекаем час из формата "11:00:00" или "11:00"
+    const timeHour = time.split(":")[0];
+    return timeHour === formattedHour;
+  });
+};
+
 const handleSubmit = async () => {
   if (selectedHours.value.size === 0) {
-    message.warning("Выберите хотя бы один час");
+    message.warning("Please select at least one hour");
     return;
   }
 
@@ -86,10 +107,11 @@ const handleSubmit = async () => {
     const hours = Array.from(selectedHours.value).sort((a, b) => a - b);
     await assignTimeSlots(selectedDay.value.dateString, hours);
 
-    message.success(`Успешно назначено ${hours.length} временных слотов`);
+    message.success(`Successfully assigned ${hours.length} time slots`);
+
     closeModal();
   } catch (error: any) {
-    message.error(error.message || "Ошибка при сохранении");
+    message.error(error.message || "Failed to save");
   } finally {
     loading.value = false;
   }
@@ -111,7 +133,7 @@ const handleSubmit = async () => {
         </a-button>
       </div>
 
-      <a-button @click="goToToday" class="today-button"> Today </a-button>
+      <!-- <a-button @click="goToToday" class="today-button"> Today </a-button> -->
     </div>
 
     <div class="calendar-grid">
@@ -141,28 +163,32 @@ const handleSubmit = async () => {
 
     <a-modal
       v-model:visible="modalVisible"
-      :title="`Выберите время: ${selectedDay?.dayNumber} ${selectedDay?.monthName}`"
+      :title="`Select time: ${selectedDay?.dayNumber} ${selectedDay?.monthName}`"
       @cancel="closeModal"
       width="600px"
       :footer="null"
     >
       <div v-if="selectedDay" class="modal-content">
         <div class="day-info">
-          <p><strong>Дата:</strong> {{ selectedDay.dateString }}</p>
+          <p><strong>Date:</strong> {{ selectedDay.dateString }}</p>
           <p>
-            <strong>День недели:</strong>
+            <strong>Day of the week:</strong>
             {{ getDayName(selectedDay.dayOfWeek) }}
           </p>
         </div>
 
         <div class="time-selection">
-          <h4>Выберите свободное время:</h4>
+          <h4>Select available time:</h4>
           <div class="time-slots-grid">
             <button
               v-for="hour in availableHours"
               :key="hour"
               class="time-slot-button"
-              :class="{ selected: isHourSelected(hour) }"
+              :class="{
+                selected: isHourSelected(hour),
+                disabled: isHourDisabled(hour),
+              }"
+              :disabled="isHourDisabled(hour)"
               @click="toggleHour(hour)"
             >
               {{ hour }}:00
@@ -172,18 +198,20 @@ const handleSubmit = async () => {
 
         <div class="selected-info" v-if="selectedHours.size > 0">
           <Icon name="lucide:info" class="info-icon" />
-          Выбрано: {{ selectedHours.size }} часов
+          Selected: {{ selectedHours.size }} hour{{
+            selectedHours.size > 1 ? "s" : ""
+          }}
         </div>
 
         <div class="modal-actions">
-          <a-button @click="closeModal" :disabled="loading"> Отмена </a-button>
+          <a-button @click="closeModal" :disabled="loading"> Cancel </a-button>
           <a-button
             type="primary"
             @click="handleSubmit"
             :loading="loading"
             :disabled="selectedHours.size === 0"
           >
-            Сохранить
+            Save
           </a-button>
         </div>
       </div>
@@ -385,6 +413,19 @@ const handleSubmit = async () => {
   border-color: var(--blue);
   color: white;
   font-weight: 600;
+}
+
+.time-slot-button.disabled {
+  background: #fafafa;
+  border-color: var(--border);
+  color: #d9d9d9;
+  cursor: not-allowed;
+}
+
+.time-slot-button.disabled:hover {
+  background: #fafafa;
+  border-color: var(--border);
+  color: #d9d9d9;
 }
 
 .selected-info {

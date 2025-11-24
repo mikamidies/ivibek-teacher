@@ -1,40 +1,61 @@
-interface TimeSlotItem {
-  hour: number;
-  minute: number;
-  second: number;
-  nano: number;
-}
-
 interface AssignTimeSlotsRequest {
   date: string;
-  times: TimeSlotItem[];
+  times: string[];
+}
+
+interface TimeSlotsByDateResponse {
+  date: string;
+  times: string[];
+}
+
+interface TimeSlotsByDate {
+  [date: string]: string[];
 }
 
 export const useTimeSlots = () => {
   const API_BASE = "https://api.ivybek.com";
   const { accessToken } = useAuth();
 
+  const fetchTimeSlotsByDate = async (
+    date: string
+  ): Promise<TimeSlotsByDate> => {
+    try {
+      const data = await $fetch<TimeSlotsByDateResponse>(
+        `${API_BASE}/api/v1/mentor/timeslots/by-date`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken.value}`,
+          },
+          params: {
+            date,
+          },
+        }
+      );
+
+      // Преобразуем ответ { date: "2025-11-25", times: ["11:00:00"] }
+      // в формат { "2025-11-25": ["11:00:00"] }
+      if (data && data.date && data.times) {
+        return { [data.date]: data.times };
+      }
+
+      return {};
+    } catch (error: any) {
+      console.error("Failed to fetch timeslots by date:", error);
+      return {};
+    }
+  };
+
   const assignTimeSlots = async (
     date: string,
     hours: number[]
   ): Promise<boolean> => {
     try {
-      const times: TimeSlotItem[] = hours.map((hour) => ({
-        hour,
-        minute: 0,
-        second: 0,
-        nano: 0,
-      }));
+      const times: string[] = hours.map((hour) => `${hour}:00`);
 
       const requestBody: AssignTimeSlotsRequest = {
         date,
         times,
       };
-
-      console.log("Отправка запроса на сервер:");
-      console.log("URL:", `${API_BASE}/api/v1/mentor/timeslots/assign`);
-      console.log("Body:", JSON.stringify(requestBody, null, 2));
-      console.log("Token:", accessToken.value ? "Есть" : "Нет");
 
       const response = await $fetch(
         `${API_BASE}/api/v1/mentor/timeslots/assign`,
@@ -48,24 +69,16 @@ export const useTimeSlots = () => {
         }
       );
 
-      console.log("Ответ сервера:", response);
-
       return true;
     } catch (error: any) {
-      console.error("Полная ошибка:", error);
-      console.error("Статус:", error?.status);
-      console.error("Данные ошибки:", error?.data);
-      console.error("Сообщение:", error?.message);
-
       const errorMessage =
-        error?.data?.message ||
-        error?.message ||
-        "Не удалось назначить временные слоты";
+        error?.data?.message || error?.message || "Failed to assign time slots";
       throw new Error(errorMessage);
     }
   };
 
   return {
     assignTimeSlots,
+    fetchTimeSlotsByDate,
   };
 };

@@ -2,36 +2,8 @@
 import MyInfoCard from "~/components/cards/MyInfoCard.vue";
 import PageBanner from "@/components/PageBanner.vue";
 
-const sessions = [
-  {
-    date: "Aug 19",
-    items: [
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting Hannibal Lectus",
-        img: "/images/person.jpg",
-      },
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting",
-        img: "/images/person.jpg",
-      },
-    ],
-  },
-  {
-    date: "Aug 20",
-    items: [
-      {
-        name: "Yu Jimin",
-        time: "5:00 pm-6:00 pm",
-        title: "Abror and Muhammet: General Meeting",
-        img: "/images/person.jpg",
-      },
-    ],
-  },
-];
+const sessions = [];
+const monitoring = [];
 </script>
 
 <template>
@@ -46,10 +18,15 @@ const sessions = [
         <div class="sessions">
           <div class="sessions__head">
             <p class="sessions__title">Upcoming sessions</p>
-            <NuxtLink to="/">View</NuxtLink>
+            <NuxtLink to="/booking">View</NuxtLink>
           </div>
           <div class="sessions__items">
+            <div class="empty" v-if="sessions.length === 0">
+              <Icon name="lucide:file-text" class="empty-icon" />
+              <p>No upcoming sessions.</p>
+            </div>
             <div
+              v-else
               class="sessions__by-date"
               v-for="(session, index) in sessions"
               :key="index"
@@ -79,40 +56,13 @@ const sessions = [
         <div class="monitoring">
           <div class="monitoring__head">
             <p class="monitoring__title">Monitoring</p>
-            <NuxtLink to="/">View</NuxtLink>
           </div>
           <div class="monitoring__body">
-            <div class="monitoring__item">
-              <div class="monitoring__left">
-                <div class="monitoring__icon">
-                  <Icon name="lucide:arrow-left-right" />
-                </div>
-                <div>
-                  <p class="monitoring__name">Azizbek Tursunov</p>
-                  <p class="monitoring__number">**** 8430</p>
-                </div>
-              </div>
-              <div class="monitoring__right">
-                <p class="monitoring__price">+ 451 000 UZS</p>
-                <p class="monitoring__date">Aug 15 2025, 16:02</p>
-              </div>
+            <div class="empty" v-if="monitoring.length === 0">
+              <Icon name="lucide:file-text" class="empty-icon" />
+              <p>No monitoring data available.</p>
             </div>
-            <div class="monitoring__item">
-              <div class="monitoring__left">
-                <div class="monitoring__icon">
-                  <Icon name="lucide:arrow-left-right" />
-                </div>
-                <div>
-                  <p class="monitoring__name">Azizbek Tursunov</p>
-                  <p class="monitoring__number">**** 8430</p>
-                </div>
-              </div>
-              <div class="monitoring__right">
-                <p class="monitoring__price">+ 451 000 UZS</p>
-                <p class="monitoring__date">Aug 15 2025, 16:02</p>
-              </div>
-            </div>
-            <div class="monitoring__item">
+            <div v-else class="monitoring__item">
               <div class="monitoring__left">
                 <div class="monitoring__icon">
                   <Icon name="lucide:arrow-left-right" />
@@ -138,6 +88,18 @@ const sessions = [
 </template>
 
 <style scoped>
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 0;
+  color: var(--light-grey);
+}
+.empty-icon {
+  font-size: 36px;
+}
 .index {
   padding: 24px;
   background: var(--border);

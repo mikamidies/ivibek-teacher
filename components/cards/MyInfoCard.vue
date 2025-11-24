@@ -1,5 +1,30 @@
 <script setup>
 const { user } = useAuth();
+const { fetchSidebarData } = useSidebar();
+
+const sidebarData = ref(null);
+const loading = ref(true);
+
+onMounted(async () => {
+  loading.value = true;
+  sidebarData.value = await fetchSidebarData();
+  loading.value = false;
+});
+
+const displayInfo = computed(() => {
+  if (sidebarData.value) {
+    return sidebarData.value.info;
+  }
+  return user.value?.info || {};
+});
+
+const activeSessionsCount = computed(() => {
+  return sidebarData.value?.activeSessionsCount || 0;
+});
+
+const sentEssaysCount = computed(() => {
+  return sidebarData.value?.sentEssaysCount || 0;
+});
 </script>
 
 <template>
@@ -10,7 +35,7 @@ const { user } = useAuth();
         <Icon name="lucide:pencil" />
       </NuxtLink>
     </div>
-    <div class="info">
+    <div class="info" v-if="!loading">
       <div class="person">
         <img
           :src="user?.image || '/images/default-person.jpg'"
@@ -21,43 +46,46 @@ const { user } = useAuth();
           class="person__img"
         />
         <div class="person__info">
-          <h4 class="person__name">{{ user?.info?.fullName || "N/A" }}</h4>
-          <p class="person__role">{{ user?.info?.email || "N/A" }}</p>
+          <h4 class="person__name">{{ displayInfo?.fullName || "N/A" }}</h4>
+          <p class="person__role">{{ displayInfo?.email || "N/A" }}</p>
         </div>
       </div>
       <div class="items">
-        <div class="item">
+        <div class="item" v-if="user?.info?.country">
           <p class="answer">Country</p>
-          <h4 class="value">{{ user?.info?.country.name || "N/A" }}</h4>
+          <h4 class="value">{{ user?.info?.country?.name || "N/A" }}</h4>
         </div>
         <div class="item">
           <p class="answer">University</p>
-          <h4 class="value">{{ user?.info?.university.name || "N/A" }}</h4>
+          <h4 class="value">{{ displayInfo?.university?.name || "N/A" }}</h4>
         </div>
         <div class="item">
           <p class="answer">Faculty</p>
-          <h4 class="value">{{ user?.info?.faculty.name || "N/A" }}</h4>
+          <h4 class="value">{{ displayInfo?.faculty?.name || "N/A" }}</h4>
         </div>
       </div>
     </div>
+    <div class="info" v-else>
+      <a-spin />
+    </div>
 
-    <div class="cards">
+    <div class="cards" v-if="!loading">
       <div class="card">
-        <p class="card__name">Essays</p>
+        <p class="card__name">Sent Essays</p>
         <div class="card__flexer">
           <div class="card__icon">
             <Icon name="lucide:pen-tool" />
           </div>
-          <p class="card__num">8</p>
+          <p class="card__num">{{ sentEssaysCount }}</p>
         </div>
       </div>
       <div class="card">
-        <p class="card__name">Courses</p>
+        <p class="card__name">Active Sessions</p>
         <div class="card__flexer">
           <div class="card__icon">
-            <Icon name="lucide:backpack" />
+            <Icon name="lucide:calendar-check" />
           </div>
-          <p class="card__num">10</p>
+          <p class="card__num">{{ activeSessionsCount }}</p>
         </div>
       </div>
     </div>
