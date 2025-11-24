@@ -17,6 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const { assignTimeSlots, fetchTimeSlotsByDate } = useTimeSlots();
+const { fetchMeetingsByDate, assignMeetingLink } = useMeetings();
 
 const currentDate = ref<Date>(getToday());
 const modalVisible = ref(false);
@@ -24,6 +25,9 @@ const selectedDay = ref<DayInfo | null>(null);
 const selectedHours = ref<Set<number>>(new Set());
 const loading = ref(false);
 const assignedTimeSlots = ref<{ [date: string]: string[] }>({});
+const meetings = ref<any[]>([]);
+const meetingLinks = ref<{ [meetingId: number]: string }>({});
+const sendingLinkId = ref<number | null>(null);
 
 const availableHours = Array.from({ length: 13 }, (_, i) => i + 10);
 
@@ -52,7 +56,13 @@ const handleDayClick = async (day: DayInfo) => {
   selectedHours.value.clear();
   modalVisible.value = true;
 
-  assignedTimeSlots.value = await fetchTimeSlotsByDate(day.dateString);
+  const [slots, meetingsData] = await Promise.all([
+    fetchTimeSlotsByDate(day.dateString),
+    fetchMeetingsByDate(day.dateString),
+  ]);
+
+  assignedTimeSlots.value = slots;
+  meetings.value = meetingsData?.meetings || [];
 
   emit("dayClick", day);
 };
@@ -61,6 +71,9 @@ const closeModal = () => {
   modalVisible.value = false;
   selectedDay.value = null;
   selectedHours.value.clear();
+  meetings.value = [];
+  meetingLinks.value = {};
+  sendingLinkId.value = null;
   loading.value = false;
 };
 
@@ -86,11 +99,20 @@ const isHourDisabled = (hour: number) => {
   // Форматируем час с ведущим нулем если нужно (10 -> "10", 9 -> "09")
   const formattedHour = hour.toString().padStart(2, "0");
 
-  return assignedHours.some((time: string) => {
-    // Извлекаем час из формата "11:00:00" или "11:00"
+  // Check if hour is in assigned time slots
+  const isAssigned = assignedHours.some((time: string) => {
     const timeHour = time.split(":")[0];
     return timeHour === formattedHour;
   });
+
+  // Check if hour is within any meeting time range
+  const isInMeeting = meetings.value.some((meeting: any) => {
+    const fromHour = parseInt(meeting.timeFrom.split(":")[0]);
+    const toHour = parseInt(meeting.timeTo.split(":")[0]);
+    return hour >= fromHour && hour < toHour;
+  });
+
+  return isAssigned || isInMeeting;
 };
 
 const handleSubmit = async () => {
@@ -104,7 +126,9 @@ const handleSubmit = async () => {
   loading.value = true;
 
   try {
-    const hours = Array.from(selectedHours.value).sort((a, b) => a - b);
+    const hours = Array.from(selectedHours.value)
+      .map((h) => Number(h))
+      .sort((a, b) => a - b);
     await assignTimeSlots(selectedDay.value.dateString, hours);
 
     message.success(`Successfully assigned ${hours.length} time slots`);
@@ -114,6 +138,37 @@ const handleSubmit = async () => {
     message.error(error.message || "Failed to save");
   } finally {
     loading.value = false;
+  }
+};
+
+const handleSendMeetingLink = async (meetingId: number) => {
+  const link = meetingLinks.value[meetingId];
+
+  if (!link || !link.trim()) {
+    message.warning("Please enter a meeting link");
+    return;
+  }
+
+  sendingLinkId.value = meetingId;
+
+  try {
+    await assignMeetingLink(meetingId, link);
+    message.success("Meeting link sent successfully");
+
+    // Update the meeting in the list
+    const meetingIndex = meetings.value.findIndex(
+      (m: any) => m.id === meetingId
+    );
+    if (meetingIndex !== -1) {
+      meetings.value[meetingIndex].meetingLink = link;
+    }
+
+    // Clear the input
+    meetingLinks.value[meetingId] = "";
+  } catch (error: any) {
+    message.error(error.message || "Failed to send meeting link");
+  } finally {
+    sendingLinkId.value = null;
   }
 };
 </script>
@@ -175,6 +230,58 @@ const handleSubmit = async () => {
             <strong>Day of the week:</strong>
             {{ getDayName(selectedDay.dayOfWeek) }}
           </p>
+        </div>
+
+        <div v-if="meetings.length > 0" class="meetings-section">
+          <h4>Booked Meetings:</h4>
+          <div class="meetings-list">
+            <div
+              v-for="meeting in meetings"
+              :key="meeting.id"
+              class="meeting-card"
+            >
+              <div class="meeting-student">
+                <div class="student__left">
+                  <img
+                    :src="meeting.student.image || '/images/person.jfif'"
+                    :alt="meeting.student.fullName"
+                    class="student-avatar"
+                  />
+                  <div class="student-info">
+                    <p class="student-name">{{ meeting.student.fullName }}</p>
+                    <p class="student-email">{{ meeting.student.email }}</p>
+                  </div>
+                </div>
+                <p class="meeting-time">
+                  <Icon name="lucide:clock" class="time-icon" />
+                  {{ meeting.timeFrom.substring(0, 5) }} -
+                  {{ meeting.timeTo.substring(0, 5) }}
+                </p>
+              </div>
+              <div v-if="!meeting.meetingLink" class="meeting__form">
+                <a-input
+                  v-model:value="meetingLinks[meeting.id]"
+                  placeholder="Enter meeting link"
+                  :disabled="sendingLinkId === meeting.id"
+                />
+                <button
+                  @click="handleSendMeetingLink(meeting.id)"
+                  :disabled="sendingLinkId === meeting.id"
+                >
+                  <span v-if="sendingLinkId === meeting.id">Sending...</span>
+                  <span v-else>Send</span>
+                </button>
+              </div>
+              <a
+                v-else
+                :href="meeting.meetingLink"
+                target="_blank"
+                class="meeting-link"
+              >
+                {{ meeting.meetingLink }}
+              </a>
+            </div>
+          </div>
         </div>
 
         <div class="time-selection">
@@ -452,6 +559,143 @@ const handleSubmit = async () => {
   border-top: 1px solid var(--border);
 }
 
+.meetings-section {
+  margin-bottom: 24px;
+}
+
+.meetings-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--dark);
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.meeting-card {
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.meeting-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(43, 127, 255, 0.1);
+}
+
+.meeting-student {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.student-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.student-info {
+  flex: 1;
+}
+
+.student-name {
+  font-size: 15px;
+  line-height: 100%;
+  font-weight: 600;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+
+.student-email {
+  font-size: 13px;
+  color: var(--text-grey);
+  margin: 0;
+}
+
+.meeting-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.meeting-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  background: var(--border);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.time-icon {
+  font-size: 16px;
+}
+
+.meeting-description {
+  font-size: 14px;
+  color: var(--text-grey);
+  line-height: 1.5;
+  margin: 0;
+  display: none;
+}
+
+.meeting-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.link-icon {
+  font-size: 14px;
+}
+.student__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.meeting__form {
+  display: grid;
+  grid-template-columns: auto 100px;
+  align-items: center;
+  gap: 8px;
+}
+.meeting__form button {
+  padding: 8px 12px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 100%;
+  font-size: 13px;
+  font-weight: 500;
+}
+.meeting__form button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.meeting__form button:disabled {
+  background: #d9d9d9;
+  cursor: not-allowed;
+}
 @media (max-width: 768px) {
   .month-year {
     min-width: 150px;

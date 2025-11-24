@@ -6,7 +6,19 @@ const handleDayClick = (day) => {
   console.log("Выбран день:", day);
 };
 
-const sessions = [];
+const { fetchUpcomingMeetings } = useMeetings();
+const upcomingMeetings = ref([]);
+
+const loadUpcomingMeetings = async () => {
+  const data = await fetchUpcomingMeetings();
+  if (data && data.meetings) {
+    upcomingMeetings.value = data.meetings;
+  }
+};
+
+onMounted(() => {
+  loadUpcomingMeetings();
+});
 </script>
 
 <template>
@@ -23,34 +35,41 @@ const sessions = [];
             <p class="sessions__title">Upcoming sessions</p>
           </div>
           <div class="sessions__items">
-            <div class="empty" v-if="sessions.length === 0">
+            <div class="empty" v-if="upcomingMeetings.length === 0">
               <Icon name="lucide:file-text" class="empty-icon" />
               <p>No upcoming sessions.</p>
             </div>
             <div
               v-else
               class="sessions__by-date"
-              v-for="(session, index) in sessions"
+              v-for="(session, index) in upcomingMeetings"
               :key="index"
             >
               <p class="sessions__date-date">{{ session.date }}</p>
               <div
                 class="sessions__item"
-                v-for="(item, itemIndex) in session.items"
-                :key="itemIndex"
+                v-for="meeting in session.meetings"
+                :key="meeting.id"
               >
-                <NuxtLink to="/">
-                  <div class="sessions__item-top">
-                    <div class="sessions__item-person">
-                      <img :src="item.img" alt="" class="sessions__item-pic" />
-                      <p class="sessions__item-name">{{ item.name }}</p>
-                    </div>
-                    <p class="sessions__item-time">{{ item.time }}</p>
+                <div class="sessions__item-top">
+                  <div class="sessions__item-person">
+                    <img
+                      :src="meeting.meetingWith.image || '/images/person.jfif'"
+                      alt=""
+                      class="sessions__item-pic"
+                    />
+                    <p class="sessions__item-name">
+                      {{ meeting.meetingWith.fullName }}
+                    </p>
                   </div>
-                  <h4 class="sessions__item-title">
-                    {{ item.title }}
-                  </h4>
-                </NuxtLink>
+                  <p class="sessions__item-time">
+                    {{ meeting.timeFrom.substring(0, 5) }} -
+                    {{ meeting.timeTo.substring(0, 5) }}
+                  </p>
+                </div>
+                <h4 class="sessions__item-title">
+                  {{ meeting.description }}
+                </h4>
               </div>
             </div>
           </div>
