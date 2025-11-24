@@ -1,5 +1,10 @@
 <script setup>
 import MyInfoCard from "@/components/cards/MyInfoCard.vue";
+import MonthlyCalendar from "@/components/booking/MonthlyCalendar.vue";
+
+const handleDayClick = (day) => {
+  console.log("Выбран день:", day);
+};
 
 const sessions = [
   {
@@ -76,7 +81,8 @@ const sessions = [
           </div>
         </div>
         <div class="booking__calendar">
-          <p class="sessions__title">Calendar</p>
+          <p class="sessions__title">Календарь</p>
+          <MonthlyCalendar @day-click="handleDayClick" />
         </div>
       </div>
       <MyInfoCard />
@@ -86,7 +92,7 @@ const sessions = [
 
 <style scoped>
 .booking-page {
-  padding: 24px;
+  padding: 24px 24px 120px 24px;
   background: var(--border);
   height: 100vh;
   overflow: auto;
